@@ -1,31 +1,59 @@
-class Game{
-	constructor(){
-		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-		
-		this.container;
-		this.player;
-		this.stats;
-		this.controls;
-		this.camera;
-		this.scene;
-		this.renderer;
-		
+/*
+
+https://learn.ml5js.org/#/reference/handpose
+
+let predictions = [];
+const video = document.getElementById('video');
+
+// Create a new handpose method
+const handpose = ml5.handpose(video, modelLoaded);
+
+// When the model is loaded
+function modelLoaded() {
+  console.log('Model Loaded!');
+}
+
+// Listen to new 'hand' events
+handpose.on('hand', results => {
+  predictions = results;
+});
+
+
+const handpose = ml5.handpose(?video, ?options, ?callback);
+*/
+
+
+
+
+class Game {
+    constructor() {
+        if (!Detector.webgl) Detector.addGetWebGLMessage();
+
+        this.container;
+        this.player;
+        this.stats;
+        this.controls;
+        this.camera;
+        this.scene;
+        this.renderer;
+
 		this.remotePlayers = []
 		this.initialisingPlayers = []
 		this.remoteData = []
 
-		this.objects = []
-		
-		this.container = document.createElement( 'div' );
-		this.container.style.height = '100%';
-		document.body.appendChild( this.container );
-        
-		const game = this;
-		
-		this.assetsPath = './assets/';
-		
-		this.clock = new THREE.Clock();
-        
+
+        this.objects = []
+
+        this.container = document.createElement('div');
+        this.container.style.height = '100%';
+        document.body.appendChild(this.container);
+
+        const game = this;
+
+        this.assetsPath = './assets/';
+
+        this.clock = new THREE.Clock();
+
         this.init();
 
         window.onError = function(error) {
@@ -59,8 +87,8 @@ class Game{
 			default:
 				break;
 
-		}
-	}
+        }
+    }
 
     init() {
 
@@ -100,9 +128,6 @@ class Game{
         document.addEventListener('keydown', game.onDocumentKeyDown);
         document.addEventListener('keyup', game.onDocumentKeyUp);
 
-		/* const polygon = [new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,100), new THREE.Vector3(50,0,75), new THREE.Vector3(50,0,25)]
-		const extrusion = extrude({polygon, depth: 50, material: null})
-		this.scene.add(extrusion) */
 
         this.animate()
     }
@@ -111,11 +136,14 @@ class Game{
     createPolarGrid() {
 
 
+        const rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.5, transparent: true });
+
+
         let tiles = []
 
-        let numV = 25
-        let numU = 25
-        let radius = 1000
+        let numV = 50
+        let numU = 50
+        let radius = 2000
         let stepV = Math.PI * 2 / numV
         let stepU = radius / numU
         const geometry = new THREE.SphereGeometry(1, 32, 16);
@@ -139,16 +167,21 @@ class Game{
                 let x = r * Math.cos(angle);
                 let z = r * Math.sin(angle);
 
-                let r1 = r 
-                let r2 = r + stepU 
-                let t1 = angle 
-                let t2 =  angle + stepV 
+                let r1 = r
+                let r2 = r + stepU
+                let t1 = angle
+                let t2 = angle + stepV
 
-                let a = getPolarCoordinate(r1,t1)
-                let b = getPolarCoordinate(r1,t2)
-                let c = getPolarCoordinate(r2,t2)
-                let d = getPolarCoordinate(r2,t1)
+                let a = getPolarCoordinate(r1, t1)
+                let b = getPolarCoordinate(r1, t2)
+                let c = getPolarCoordinate(r2, t2)
+                let d = getPolarCoordinate(r2, t1)
 
+                const polygon = [a, b, c, d]
+                const extrusion = extrude({ polygon, depth: 1, material: new THREE.MeshPhongMaterial({ wireframe: true }) })
+
+                extrusion.rolloverMesh = extrude({ polygon, depth: 100, material: rollOverMaterial })
+                this.objects.push(extrusion)
 
 
                 let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'white' }))
@@ -157,7 +190,7 @@ class Game{
 
                 let y = Math.sqrt(x * x + z + z) * k
 
-                // this.scene.add(mesh)
+                this.scene.add(extrusion)
 
 
                 let tile = { u, v, w: angle, h: stepU, mesh, x, y, z }
@@ -168,9 +201,9 @@ class Game{
                 u++
             }
 
-            const points = row.map(o => new THREE.Vector3(o.x, o.y, o.z))
-            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xffffff }));
-            this.scene.add(line);
+            // const points = row.map(o => new THREE.Vector3(o.x, o.y, o.z))
+            // const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xffffff }));
+            // this.scene.add(line);
             v++
 
         }
@@ -178,8 +211,8 @@ class Game{
         function getPolarCoordinate(r, angle) {
 
             let x = r * Math.cos(angle);
-            let y = r * Math.sin(angle);
-            return new THREE.Vector2(x,y)
+            let z = r * Math.sin(angle);
+            return new THREE.Vector3(x, 0, z)
 
         }
 
@@ -247,7 +280,7 @@ class Game{
 
         game.plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ visible: false }));
 
-        game.objects.push(game.plane)
+        // game.objects.push(game.plane)
         game.scene.add(game.plane);
 
     }
@@ -323,45 +356,76 @@ class Game{
         game.pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
         game.raycaster.setFromCamera(game.pointer, game.camera);
         const intersects = game.raycaster.intersectObjects(game.objects, false);
+
+
         if (intersects.length > 0) {
+
+                if (game.rollOverMesh) game.scene.remove(game.rollOverMesh)
+
             const intersect = intersects[0];
-            game.player.rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
-            game.player.rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-			// console.log('Update socket:: ', game.player.updateSocket)
-			game.player.position = game.player.rollOverMesh.position
-			game.player.updateSocket()
-			// game.player.socket.emit("update", { uuid: game.player.id, position: game.player.rollOverMesh.position, color: game.player.color });
+
+            // console.log('intersects', intersect.object)
+            console.log('intersects', intersect.object.rolloverMesh)
+
+            if (intersect.object.rolloverMesh) {
+
+                if (game.rollOverMesh) game.scene.remove(game.rollOverMesh)
+
+                game.rollOverMesh = intersect.object.rolloverMesh
+                game.scene.add(game.rollOverMesh)
+
+
+                game.scene.add(intersect.object.rolloverMesh)
+
+				console.log(game.player.position, game.rollOverMesh.position)
+				
+				
+				game.player.position = game.rollOverMesh.position	//give coordinates to pass to socket
+				game.player.updateSocket()
+
+            } else {
+                // game.rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
+                // game.rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+            }
+
+
         }
 
     }
 
     onPointerDown(event) {
 
-		game.pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+        game.pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
         game.raycaster.setFromCamera(game.pointer, game.camera);
         const intersects = game.raycaster.intersectObjects(game.objects, false);
 
-		if ( intersects.length > 0 ) {
-			const intersect = intersects[ 0 ];
-			// delete cube
-			if ( game.isShiftDown ) {
-				if ( intersect.object !== game.plane ) {
-					game.scene.remove( intersect.object );
-					game.objects.splice( game.objects.indexOf( intersect.object ), 1 );
-					game.player.socket.emit("remove", { uuid: intersect.object.uuid });
+        if (intersects.length > 0) {
+            
 
-				}
-				// create cube
-			} else {
-				const voxel = new THREE.Mesh( game.player.cubeGeo, game.player.cubeMaterial );
+            const intersect = intersects[0];
+
+            let geo = intersect.object.geometry
+            if (intersect.object.rolloverMesh) geo = intersect.object.rolloverMesh.geometry
+
+            // delete cube
+            if (game.isShiftDown) {
+                if (intersect.object !== game.plane) {
+                    game.scene.remove(intersect.object);
+                    game.objects.splice(game.objects.indexOf(intersect.object), 1);
+                    game.player.socket.emit("remove", { uuid: intersect.object.uuid });
+
+                }
+                // create cube
+            } else {
+                const voxel = new THREE.Mesh( game.player.cubeGeo, game.player.cubeMaterial );
 				voxel.position.copy( intersect.point ).add( intersect.face.normal );
 				voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
 				game.scene.add( voxel );
 				game.objects.push( voxel );
 				game.player.socket.emit("add", {position: voxel.position, uuid: voxel.uuid, color: game.player.color});
-			}
-		}
-	}
+            }
+        }
+    }
     
 
     onDocumentKeyDown(event) {
