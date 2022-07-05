@@ -3,12 +3,13 @@ class Game{
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 		
 		this.container;
-		this.player = { };
+		this.player = new PlayerLocal(this);
 		this.stats;
 		this.controls;
 		this.camera;
 		this.scene;
 		this.renderer;
+
 
 		this.objects = []
 		
@@ -28,6 +29,31 @@ class Game{
             console.error(JSON.stringify(error));
         }
     }
+
+	update(key, value) {
+		switch(key) {
+			case 'add':
+				console.log('Game update: ', key, value)
+				const remoteCubeMat = new THREE.MeshLambertMaterial( { color: value.color, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
+				const voxel = new THREE.Mesh( game.cubeGeo, remoteCubeMat );
+				voxel.position.copy( value.position );
+				voxel.uuid = value.uuid
+				game.scene.add( voxel );
+				game.objects.push( voxel );
+				break;
+			case 'remove':
+				const objectIndex = game.objects.findIndex(o => o.uuid === value.uuid)
+				console.log('Game update: ', key, value, objectIndex)
+				if(objectIndex > -1) {
+					game.scene.remove(game.objects[objectIndex])
+					game.objects.splice( objectIndex, 1 );
+				}
+				break;
+			default:
+				break;
+
+		}
+	}
 
     init() {
 
@@ -88,7 +114,7 @@ class Game{
                 let z = r * Math.sin(angle);
 
 
-                let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'whie' }))
+                let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'white' }))
                 mesh.position.x = x
                 mesh.position.z = z
 
@@ -149,7 +175,7 @@ class Game{
 			game.scene.add( game.rollOverMesh );
 
 			game.cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
-			game.cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xfeb74c, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
+			game.cubeMaterial = new THREE.MeshLambertMaterial( { color: game.player.color, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
 
 
 			// grid
@@ -217,6 +243,8 @@ class Game{
 				if ( intersect.object !== game.plane ) {
 					game.scene.remove( intersect.object );
 					game.objects.splice( game.objects.indexOf( intersect.object ), 1 );
+					game.player.socket.emit("remove", { uuid: intersect.object.uuid });
+
 				}
 				// create cube
 			} else {
@@ -225,6 +253,7 @@ class Game{
 				voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
 				game.scene.add( voxel );
 				game.objects.push( voxel );
+				game.player.socket.emit("add", {position: voxel.position, uuid: voxel.uuid, color: game.player.color});
 			}
 		}
 	}
