@@ -1,27 +1,30 @@
-class Game{
-	constructor(){
-		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-		
-		this.container;
-		this.player = { };
-		this.stats;
-		this.controls;
-		this.camera;
-		this.scene;
-		this.renderer;
+class Game {
 
-		this.objects = []
-		
-		this.container = document.createElement( 'div' );
-		this.container.style.height = '100%';
-		document.body.appendChild( this.container );
-        
-		const game = this;
-		
-		this.assetsPath = './assets/';
-		
-		this.clock = new THREE.Clock();
-        
+
+
+    constructor() {
+        if (!Detector.webgl) Detector.addGetWebGLMessage();
+
+        this.container;
+        this.player = {};
+        this.stats;
+        this.controls;
+        this.camera;
+        this.scene;
+        this.renderer;
+
+        this.objects = []
+
+        this.container = document.createElement('div');
+        this.container.style.height = '100%';
+        document.body.appendChild(this.container);
+
+        const game = this;
+
+        this.assetsPath = './assets/';
+
+        this.clock = new THREE.Clock();
+
         this.init();
 
         window.onError = function(error) {
@@ -60,10 +63,10 @@ class Game{
         this.controls.update();
 
         window.addEventListener('resize', function() { game.onWindowResize(); }, false);
-		document.addEventListener( 'pointermove', game.onPointerMove );
-		document.addEventListener( 'pointerdown', game.onPointerDown );
-		document.addEventListener( 'keydown', game.onDocumentKeyDown );
-		document.addEventListener( 'keyup', game.onDocumentKeyUp );
+        document.addEventListener('pointermove', game.onPointerMove);
+        document.addEventListener('pointerdown', game.onPointerDown);
+        document.addEventListener('keydown', game.onDocumentKeyDown);
+        document.addEventListener('keyup', game.onDocumentKeyUp);
 
         this.animate()
     }
@@ -72,17 +75,30 @@ class Game{
     createPolarGrid() {
 
 
+        let tiles = []
 
-        let numV = 100
-        let numU = 10
+        let numV = 25
+        let numU = 25
         let radius = 1000
         let stepV = Math.PI * 2 / numV
         let stepU = radius / numU
-                const geometry = new THREE.SphereGeometry(1, 32, 16);
+        const geometry = new THREE.SphereGeometry(1, 32, 16);
 
-        for (var r = 0; r < radius; r += stepU) {
+        let k = -0.10
 
-            for (var angle = 0; angle < Math.PI * 2; angle += stepV) {
+
+        let u = 0
+        let v = 0
+
+        for (var r = stepU*5; r < radius; r += stepU) {
+
+            let row = []
+
+
+
+            for (var angle = 0; angle < Math.PI * 2+1; angle += stepV) {
+
+
 
                 let x = r * Math.cos(angle);
                 let z = r * Math.sin(angle);
@@ -92,21 +108,63 @@ class Game{
                 mesh.position.x = x
                 mesh.position.z = z
 
-                this.scene.add(mesh)
+                let y = Math.sqrt(x*x + z+z)*k
 
-                // console.log('addMesh', x, z)
+                // this.scene.add(mesh)
 
 
+                let tile = { u, v, w: angle, h: stepU, mesh, x,y, z }
+                tiles.push(tile)
+
+                row.push(tile)
+
+                u++
             }
 
+            const points = row.map(o => new THREE.Vector3(o.x, o.y, o.z))
+            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0xffffff}));
+            this.scene.add(line);
+            v++
 
         }
 
+         for (var angle = 0; angle < Math.PI * 2; angle += stepV) {
+
+   
+
+            let row = []
+
+
+     for (var r = stepU*5; r < radius; r += stepU) {
+   
 
 
 
+                let x = r * Math.cos(angle);
+                let z = r * Math.sin(angle);
 
 
+                let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'whie' }))
+                mesh.position.x = x
+                mesh.position.z = z
+
+                // this.scene.add(mesh)
+                let y = Math.sqrt(x*x + z+z)*k
+
+                let tile = { u, v, w: angle, h: stepU, mesh, x,y,z }
+                tiles.push(tile)
+
+                row.push(tile)
+
+                u++
+            }
+
+            const points = row.map(o => new THREE.Vector3(o.x, o.y, o.z))
+            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0xffffff}));
+            this.scene.add(line);
+            v++
+
+        }
     }
 
 
@@ -131,51 +189,54 @@ class Game{
 			} );	
 		}) */
 
-        // const tloader = new THREE.CubeTextureLoader();
-        // 	tloader.setPath( `${game.assetsPath}/images/` );
+        const tloader = new THREE.CubeTextureLoader();
+        tloader.setPath(`${game.assetsPath}/images/`);
 
-        // 	var textureCube = tloader.load( [
-        // 		'px.jpg', 'nx.jpg',
-        // 		'py.jpg', 'ny.jpg',
-        // 		'pz.jpg', 'nz.jpg'
-        // 	] );
+        var textureCube = tloader.load([
+            'c1.png',
+            'c2.png',
+            'top.png',
+            'bottom.png',
+            'c3.png',
+            'c4.png',
+        ]);
 
         // game.scene.background = textureCube;
 
-			// roll-over helpers
-			const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
-			const rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
-			game.rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
-			game.scene.add( game.rollOverMesh );
+        // roll-over helpers
+        const rollOverGeo = new THREE.BoxGeometry(50, 50, 50);
+        const rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.5, transparent: true });
+        game.rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+        game.scene.add(game.rollOverMesh);
 
-			game.cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
-			game.cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xfeb74c, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
+        game.cubeGeo = new THREE.BoxGeometry(50, 50, 50);
+        game.cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xfeb74c });
 
 
-			// grid
-			const gridHelper = new THREE.GridHelper( 1000, 20 );
-			game.scene.add( gridHelper );
+        // grid
+        // const gridHelper = new THREE.GridHelper(1000, 20);
+        // game.scene.add(gridHelper);
 
-			//raycaster and pointer
-			game.raycaster = new THREE.Raycaster();
-			game.pointer = new THREE.Vector2();
+        //raycaster and pointer
+        game.raycaster = new THREE.Raycaster();
+        game.pointer = new THREE.Vector2();
 
-			//shift press handler
-			game.isShiftDown = false
+        //shift press handler
+        game.isShiftDown = false
 
-			const geometry = new THREE.PlaneGeometry( 1000, 1000 );
-			geometry.rotateX( - Math.PI / 2 );
+        const geometry = new THREE.PlaneGeometry(1000, 1000);
+        geometry.rotateX(-Math.PI / 2);
 
-			game.plane = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { visible: false } ) );
+        game.plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ visible: false }));
 
-			game.objects.push(game.plane)
-			game.scene.add( game.plane );
-		
-	}
-    
-	onWindowResize() {
-		this.camera.aspect = window.innerWidth / window.innerHeight;
-		this.camera.updateProjectionMatrix();
+        game.objects.push(game.plane)
+        game.scene.add(game.plane);
+
+    }
+
+    onWindowResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
 
         this.renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -185,60 +246,63 @@ class Game{
         const game = this;
         const dt = this.clock.getDelta();
 
-		requestAnimationFrame(function() { game.animate(); });
-        this.renderer.render(this.scene, this.camera);	
+        requestAnimationFrame(function() { game.animate(); });
+        this.renderer.render(this.scene, this.camera);
+    }
+
+    onPointerMove(event) {
+
+        // console.log('Running onPointerMove.')
+
+        game.pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+        game.raycaster.setFromCamera(game.pointer, game.camera);
+        const intersects = game.raycaster.intersectObjects(game.objects, false);
+        if (intersects.length > 0) {
+            const intersect = intersects[0];
+            game.rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
+            game.rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+        }
+
+    }
+
+    onPointerDown(event) {
+
+        game.pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+        game.raycaster.setFromCamera(game.pointer, game.camera);
+        const intersects = game.raycaster.intersectObjects(game.objects, false);
+
+        if (intersects.length > 0) {
+            const intersect = intersects[0];
+            // delete cube
+            if (game.isShiftDown) {
+                if (intersect.object !== game.plane) {
+                    game.scene.remove(intersect.object);
+                    game.objects.splice(game.objects.indexOf(intersect.object), 1);
+                }
+                // create cube
+            } else {
+                const voxel = new THREE.Mesh(game.cubeGeo, game.cubeMaterial);
+                voxel.position.copy(intersect.point).add(intersect.face.normal);
+                voxel.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+                game.scene.add(voxel);
+                game.objects.push(voxel);
+            }
+        }
+    }
+
+    onDocumentKeyDown(event) {
+        switch (event.keyCode) {
+            case 16:
+                game.isShiftDown = true;
+                break;
+        }
+    }
+
+    onDocumentKeyUp(event) {
+        switch (event.keyCode) {
+            case 16:
+                game.isShiftDown = false;
+                break;
+        }
+    }
 }
-
-	onPointerMove( event ) {
-
-		// console.log('Running onPointerMove.')
-
-		game.pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-		game.raycaster.setFromCamera( game.pointer, game.camera );
-		const intersects = game.raycaster.intersectObjects( game.objects, false );
-		if ( intersects.length > 0 ) {
-			const intersect = intersects[ 0 ];
-			game.rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
-			game.rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
-		}
-	
-	}
-
-	onPointerDown( event ) {
-
-		game.pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-		game.raycaster.setFromCamera( game.pointer, game.camera );
-		const intersects = game.raycaster.intersectObjects( game.objects, false );
-
-		if ( intersects.length > 0 ) {
-			const intersect = intersects[ 0 ];
-			// delete cube
-			if ( game.isShiftDown ) {
-				if ( intersect.object !== game.plane ) {
-					game.scene.remove( intersect.object );
-					game.objects.splice( game.objects.indexOf( intersect.object ), 1 );
-				}
-				// create cube
-			} else {
-				const voxel = new THREE.Mesh( game.cubeGeo, game.cubeMaterial );
-				voxel.position.copy( intersect.point ).add( intersect.face.normal );
-				voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
-				game.scene.add( voxel );
-				game.objects.push( voxel );
-			}
-		}
-	}
-
-	onDocumentKeyDown( event ) {
-		switch ( event.keyCode ) {
-			case 16: game.isShiftDown = true; break;
-		}
-	}
-
-	onDocumentKeyUp( event ) {
-		switch ( event.keyCode ) {
-			case 16: game.isShiftDown = false; break;
-		}
-	}
-}
-
