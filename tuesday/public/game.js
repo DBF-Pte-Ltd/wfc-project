@@ -1,36 +1,59 @@
-class Game {
+class Game{
+	constructor(){
+		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+		
+		this.container;
+		this.player = new PlayerLocal(this);
+		this.stats;
+		this.controls;
+		this.camera;
+		this.scene;
+		this.renderer;
 
 
-
-    constructor() {
-        if (!Detector.webgl) Detector.addGetWebGLMessage();
-
-        this.container;
-        this.player = {};
-        this.stats;
-        this.controls;
-        this.camera;
-        this.scene;
-        this.renderer;
-
-        this.objects = []
-
-        this.container = document.createElement('div');
-        this.container.style.height = '100%';
-        document.body.appendChild(this.container);
-
-        const game = this;
-
-        this.assetsPath = './assets/';
-
-        this.clock = new THREE.Clock();
-
+		this.objects = []
+		
+		this.container = document.createElement( 'div' );
+		this.container.style.height = '100%';
+		document.body.appendChild( this.container );
+        
+		const game = this;
+		
+		this.assetsPath = './assets/';
+		
+		this.clock = new THREE.Clock();
+        
         this.init();
 
         window.onError = function(error) {
             console.error(JSON.stringify(error));
         }
     }
+
+	update(key, value) {
+		switch(key) {
+			case 'add':
+				console.log('Game update: ', key, value)
+				const remoteCubeMat = new THREE.MeshLambertMaterial( { color: value.color, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
+				const voxel = new THREE.Mesh( game.cubeGeo, remoteCubeMat );
+				voxel.position.copy( value.position );
+				voxel.uuid = value.uuid
+				game.scene.add( voxel );
+				game.objects.push( voxel );
+				break;
+			case 'remove':
+				const objectIndex = game.objects.findIndex(o => o.uuid === value.uuid)
+				console.log('Game update: ', key, value, objectIndex)
+				if(objectIndex > -1) {
+					game.scene.remove(game.objects[objectIndex])
+					game.objects.splice( objectIndex, 1 );
+				}
+				break;
+			default:
+				break;
+
+		}
+	}
 
     init() {
 
@@ -121,7 +144,7 @@ class Game {
 
 
 
-                let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'whie' }))
+                let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'white' }))
                 mesh.position.x = x
                 mesh.position.z = z
 
@@ -196,8 +219,8 @@ class Game {
         game.rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
         game.scene.add(game.rollOverMesh);
 
-        game.cubeGeo = new THREE.BoxGeometry(50, 50, 50);
-        game.cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xfeb74c });
+			game.cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
+			game.cubeMaterial = new THREE.MeshLambertMaterial( { color: game.player.color, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
 
 
         // grid
@@ -254,28 +277,32 @@ class Game {
 
     onPointerDown(event) {
 
-        game.pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+		game.pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
         game.raycaster.setFromCamera(game.pointer, game.camera);
         const intersects = game.raycaster.intersectObjects(game.objects, false);
 
-        if (intersects.length > 0) {
-            const intersect = intersects[0];
-            // delete cube
-            if (game.isShiftDown) {
-                if (intersect.object !== game.plane) {
-                    game.scene.remove(intersect.object);
-                    game.objects.splice(game.objects.indexOf(intersect.object), 1);
-                }
-                // create cube
-            } else {
-                const voxel = new THREE.Mesh(game.cubeGeo, game.cubeMaterial);
-                voxel.position.copy(intersect.point).add(intersect.face.normal);
-                voxel.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-                game.scene.add(voxel);
-                game.objects.push(voxel);
-            }
-        }
-    }
+		if ( intersects.length > 0 ) {
+			const intersect = intersects[ 0 ];
+			// delete cube
+			if ( game.isShiftDown ) {
+				if ( intersect.object !== game.plane ) {
+					game.scene.remove( intersect.object );
+					game.objects.splice( game.objects.indexOf( intersect.object ), 1 );
+					game.player.socket.emit("remove", { uuid: intersect.object.uuid });
+
+				}
+				// create cube
+			} else {
+				const voxel = new THREE.Mesh( game.cubeGeo, game.cubeMaterial );
+				voxel.position.copy( intersect.point ).add( intersect.face.normal );
+				voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+				game.scene.add( voxel );
+				game.objects.push( voxel );
+				game.player.socket.emit("add", {position: voxel.position, uuid: voxel.uuid, color: game.player.color});
+			}
+		}
+	}
+    
 
     onDocumentKeyDown(event) {
         switch (event.keyCode) {
