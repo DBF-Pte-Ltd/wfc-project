@@ -93,6 +93,11 @@ class Game{
 			game.scene.background = textureCube;
 
 			console.log('background:: ', game.scene.background)
+
+			// grid
+
+			const gridHelper = new THREE.GridHelper( 1000, 20 );
+			game.scene.add( gridHelper );
 			
 			// game.animate();
 	}
