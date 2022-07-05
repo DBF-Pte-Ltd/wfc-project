@@ -3,13 +3,16 @@ class Game{
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 		
 		this.container;
-		this.player = new PlayerLocal(this);
+		this.player;
 		this.stats;
 		this.controls;
 		this.camera;
 		this.scene;
 		this.renderer;
-
+		
+		this.remotePlayers = []
+		this.initialisingPlayers = []
+		this.remoteData = []
 
 		this.objects = []
 		
@@ -33,9 +36,9 @@ class Game{
 	update(key, value) {
 		switch(key) {
 			case 'add':
-				console.log('Game update: ', key, value)
+				// console.log('Game update: ', key, value)
 				const remoteCubeMat = new THREE.MeshLambertMaterial( { color: value.color, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
-				const voxel = new THREE.Mesh( game.cubeGeo, remoteCubeMat );
+				const voxel = new THREE.Mesh( game.player.cubeGeo, remoteCubeMat );
 				voxel.position.copy( value.position );
 				voxel.uuid = value.uuid
 				game.scene.add( voxel );
@@ -43,12 +46,16 @@ class Game{
 				break;
 			case 'remove':
 				const objectIndex = game.objects.findIndex(o => o.uuid === value.uuid)
-				console.log('Game update: ', key, value, objectIndex)
+				// console.log('Game update: ', key, value, objectIndex)
 				if(objectIndex > -1) {
 					game.scene.remove(game.objects[objectIndex])
 					game.objects.splice( objectIndex, 1 );
 				}
 				break;
+			/* case 'highlight':
+				console.log('Update highlight:: ', value)
+				game.remotePlayers[value.uuid].rollOverMesh.position.copy(value.position)
+				break; */
 			default:
 				break;
 
@@ -72,6 +79,8 @@ class Game{
         const loader = new THREE.FBXLoader();
         const game = this;
 
+		this.player = new PlayerLocal(this)
+
         this.loadEnvironment(loader);
         this.createPolarGrid()
 
@@ -91,9 +100,9 @@ class Game{
         document.addEventListener('keydown', game.onDocumentKeyDown);
         document.addEventListener('keyup', game.onDocumentKeyUp);
 
-		const polygon = [new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,100), new THREE.Vector3(50,0,75), new THREE.Vector3(50,0,25)]
+		/* const polygon = [new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,100), new THREE.Vector3(50,0,75), new THREE.Vector3(50,0,25)]
 		const extrusion = extrude({polygon, depth: 50, material: null})
-		this.scene.add(extrusion)
+		this.scene.add(extrusion) */
 
         this.animate()
     }
@@ -213,13 +222,13 @@ class Game{
         // game.scene.background = textureCube;
 
         // roll-over helpers
-        const rollOverGeo = new THREE.BoxGeometry(50, 50, 50);
+        /* const rollOverGeo = new THREE.BoxGeometry(50, 50, 50);
         const rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.5, transparent: true });
         game.rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
-        game.scene.add(game.rollOverMesh);
+        game.scene.add(game.rollOverMesh); */
 
-			game.cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
-			game.cubeMaterial = new THREE.MeshLambertMaterial( { color: game.player.color, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
+			/* game.cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
+			game.cubeMaterial = new THREE.MeshLambertMaterial( { color: game.player.color, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } ); */
 
 
         // grid
@@ -251,11 +260,59 @@ class Game{
 
     }
 
+	updateRemotePlayers() {
+		if (this.remoteData===undefined || this.remoteData.length == 0 || this.player===undefined || this.player.id===undefined) return;
+
+		const newPlayers = [];
+		const game = this;
+		//Get all remotePlayers from remoteData array
+		const remotePlayers = [];
+
+		this.remoteData.forEach( function(data){
+			if (game.player.id != data.id){
+				//Is this player being initialised?
+				let iplayer;
+				game.initialisingPlayers.forEach( function(player){
+					if (player.id == data.id) iplayer = player;
+				});
+				//If not being initialised check the remotePlayers array
+				if (iplayer===undefined){
+					let rplayer;
+					game.remotePlayers.forEach( function(player){
+						if (player.id == data.id) rplayer = player;
+					});
+
+					if (rplayer===undefined){
+						//Initialise player
+						// game.initialisingPlayers.push( new Player( game, data ));
+						remotePlayers.push(new Player( game, data ))
+						// console.log('Remote players:: ', {remote: game.remotePlayers, toInit: game.initialisingPlayers})
+
+					}else{
+						//Player exists
+						remotePlayers.push(rplayer);
+					}
+				}
+			}
+		});
+		
+		/* this.scene.children.forEach( function(object){
+			if (object.userData.remotePlayer && game.getRemotePlayerById(object.userData.id)==undefined){
+				game.scene.remove(object);
+			}	
+		}); */
+		
+		this.remotePlayers = remotePlayers;
+		this.remotePlayers.forEach(function(player){ player.update( ); });
+	}
+
     animate() {
         const game = this;
         const dt = this.clock.getDelta();
 
         requestAnimationFrame(function() { game.animate(); });
+		this.updateRemotePlayers(dt);
+
         this.renderer.render(this.scene, this.camera);
     }
 
@@ -268,8 +325,12 @@ class Game{
         const intersects = game.raycaster.intersectObjects(game.objects, false);
         if (intersects.length > 0) {
             const intersect = intersects[0];
-            game.rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
-            game.rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+            game.player.rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
+            game.player.rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+			// console.log('Update socket:: ', game.player.updateSocket)
+			game.player.position = game.player.rollOverMesh.position
+			game.player.updateSocket()
+			// game.player.socket.emit("update", { uuid: game.player.id, position: game.player.rollOverMesh.position, color: game.player.color });
         }
 
     }
@@ -292,7 +353,7 @@ class Game{
 				}
 				// create cube
 			} else {
-				const voxel = new THREE.Mesh( game.cubeGeo, game.cubeMaterial );
+				const voxel = new THREE.Mesh( game.player.cubeGeo, game.player.cubeMaterial );
 				voxel.position.copy( intersect.point ).add( intersect.face.normal );
 				voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
 				game.scene.add( voxel );
