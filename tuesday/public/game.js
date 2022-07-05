@@ -117,30 +117,41 @@ class Game{
         let u = 0
         let v = 0
 
-        for (var r = stepU*5; r < radius; r += stepU) {
+        for (var r = stepU * 5; r < radius; r += stepU) {
 
             let row = []
 
 
 
-            for (var angle = 0; angle < Math.PI * 2+1; angle += stepV) {
+            for (var angle = 0; angle < Math.PI * 2 + 1; angle += stepV) {
 
 
 
                 let x = r * Math.cos(angle);
                 let z = r * Math.sin(angle);
+
+                let r1 = r 
+                let r2 = r + stepU 
+                let t1 = angle 
+                let t2 =  angle + stepV 
+
+                let a = getPolarCoordinate(r1,t1)
+                let b = getPolarCoordinate(r1,t2)
+                let c = getPolarCoordinate(r2,t2)
+                let d = getPolarCoordinate(r2,t1)
+
 
 
                 let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'white' }))
                 mesh.position.x = x
                 mesh.position.z = z
 
-                let y = Math.sqrt(x*x + z+z)*k
+                let y = Math.sqrt(x * x + z + z) * k
 
                 // this.scene.add(mesh)
 
 
-                let tile = { u, v, w: angle, h: stepU, mesh, x,y, z }
+                let tile = { u, v, w: angle, h: stepU, mesh, x, y, z }
                 tiles.push(tile)
 
                 row.push(tile)
@@ -149,49 +160,20 @@ class Game{
             }
 
             const points = row.map(o => new THREE.Vector3(o.x, o.y, o.z))
-            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0xffffff}));
+            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xffffff }));
             this.scene.add(line);
             v++
 
         }
 
-         for (var angle = 0; angle < Math.PI * 2; angle += stepV) {
+        function getPolarCoordinate(r, angle) {
 
-   
-
-            let row = []
-
-
-     for (var r = stepU*5; r < radius; r += stepU) {
-   
-
-
-
-                let x = r * Math.cos(angle);
-                let z = r * Math.sin(angle);
-
-
-                let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'whie' }))
-                mesh.position.x = x
-                mesh.position.z = z
-
-                // this.scene.add(mesh)
-                let y = Math.sqrt(x*x + z+z)*k
-
-                let tile = { u, v, w: angle, h: stepU, mesh, x,y,z }
-                tiles.push(tile)
-
-                row.push(tile)
-
-                u++
-            }
-
-            const points = row.map(o => new THREE.Vector3(o.x, o.y, o.z))
-            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0xffffff}));
-            this.scene.add(line);
-            v++
+            let x = r * Math.cos(angle);
+            let y = r * Math.sin(angle);
+            return new THREE.Vector2(x,y)
 
         }
+
     }
 
 
