@@ -9,6 +9,8 @@ class Game{
 		this.camera;
 		this.scene;
 		this.renderer;
+
+		this.objects = []
 		
 		this.container = document.createElement( 'div' );
 		this.container.style.height = '100%';
@@ -58,6 +60,11 @@ class Game{
 			
 		window.addEventListener( 'resize', function(){ game.onWindowResize(); }, false );
 
+		document.addEventListener( 'pointermove', game.onPointerMove );
+		document.addEventListener( 'pointerdown', game.onPointerDown );
+		document.addEventListener( 'keydown', game.onDocumentKeyDown );
+		document.addEventListener( 'keyup', game.onDocumentKeyUp );
+
 		this.animate()
 	}
 	
@@ -92,14 +99,35 @@ class Game{
 
 			game.scene.background = textureCube;
 
-			console.log('background:: ', game.scene.background)
+			// roll-over helpers
+			const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
+			const rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
+			game.rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+			game.scene.add( game.rollOverMesh );
+
+			game.cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
+			game.cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xfeb74c, map: new THREE.TextureLoader().load( 'assets/images/abstract.jpg' ) } );
+
 
 			// grid
-
 			const gridHelper = new THREE.GridHelper( 1000, 20 );
 			game.scene.add( gridHelper );
-			
-			// game.animate();
+
+			//raycaster and pointer
+			game.raycaster = new THREE.Raycaster();
+			game.pointer = new THREE.Vector2();
+
+			//shift press handler
+			game.isShiftDown = false
+
+			const geometry = new THREE.PlaneGeometry( 1000, 1000 );
+			geometry.rotateX( - Math.PI / 2 );
+
+			game.plane = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { visible: false } ) );
+
+			game.objects.push(game.plane)
+			game.scene.add( game.plane );
+		
 	}
     
 	onWindowResize() {
@@ -119,4 +147,57 @@ class Game{
 		this.renderer.render( this.scene, this.camera );
 
 	}
+
+	onPointerMove( event ) {
+
+		console.log('Running onPointerMove.')
+
+		game.pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+		game.raycaster.setFromCamera( game.pointer, game.camera );
+		const intersects = game.raycaster.intersectObjects( game.objects, false );
+		if ( intersects.length > 0 ) {
+			const intersect = intersects[ 0 ];
+			game.rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+			game.rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+		}
+	
+	}
+
+	onPointerDown( event ) {
+
+		game.pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+		game.raycaster.setFromCamera( game.pointer, game.camera );
+		const intersects = game.raycaster.intersectObjects( game.objects, false );
+
+		if ( intersects.length > 0 ) {
+			const intersect = intersects[ 0 ];
+			// delete cube
+			if ( game.isShiftDown ) {
+				if ( intersect.object !== game.plane ) {
+					game.scene.remove( intersect.object );
+					game.objects.splice( game.objects.indexOf( intersect.object ), 1 );
+				}
+				// create cube
+			} else {
+				const voxel = new THREE.Mesh( game.cubeGeo, game.cubeMaterial );
+				voxel.position.copy( intersect.point ).add( intersect.face.normal );
+				voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+				game.scene.add( voxel );
+				game.objects.push( voxel );
+			}
+		}
+	}
+
+	onDocumentKeyDown( event ) {
+		switch ( event.keyCode ) {
+			case 16: game.isShiftDown = true; break;
+		}
+	}
+
+	onDocumentKeyUp( event ) {
+		switch ( event.keyCode ) {
+			case 16: game.isShiftDown = false; break;
+		}
+	}
 }
+
