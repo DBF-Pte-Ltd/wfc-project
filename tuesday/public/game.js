@@ -91,6 +91,10 @@ class Game{
         document.addEventListener('keydown', game.onDocumentKeyDown);
         document.addEventListener('keyup', game.onDocumentKeyUp);
 
+		const polygon = [new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,100), new THREE.Vector3(50,0,75), new THREE.Vector3(50,0,25)]
+		const extrusion = extrude({polygon, depth: 50, material: null})
+		this.scene.add(extrusion)
+
         this.animate()
     }
 
