@@ -90,30 +90,47 @@ class Game {
         let u = 0
         let v = 0
 
-        for (var r = stepU*5; r < radius; r += stepU) {
+        for (var r = stepU * 5; r < radius; r += stepU) {
 
             let row = []
 
 
 
-            for (var angle = 0; angle < Math.PI * 2+1; angle += stepV) {
+            for (var angle = 0; angle < Math.PI * 2 + 1; angle += stepV) {
 
 
 
                 let x = r * Math.cos(angle);
                 let z = r * Math.sin(angle);
 
+                let a = getPolarCoordinate(r,angle)
+                let b = getPolarCoordinate(r,angle + stepV)
+
+
+           /*     let ax = r * Math.cos(angle);
+                let az = r * Math.sin(angle);
+
+                let bx = r * Math.cos(angle + stepV);
+                let bz = r * Math.sin(angle + stepV);
+
+                let cx = (r + stepU) * Math.cos(angle + stepV);
+                let cz = (r + stepU) * Math.sin(angle + StepV);
+
+                let dx = (r + stepU) * Math.cos(angle);
+                let dz = (r + stepU) * Math.sin(angle);*/
+
+
 
                 let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'whie' }))
                 mesh.position.x = x
                 mesh.position.z = z
 
-                let y = Math.sqrt(x*x + z+z)*k
+                let y = Math.sqrt(x * x + z + z) * k
 
                 // this.scene.add(mesh)
 
 
-                let tile = { u, v, w: angle, h: stepU, mesh, x,y, z }
+                let tile = { u, v, w: angle, h: stepU, mesh, x, y, z }
                 tiles.push(tile)
 
                 row.push(tile)
@@ -122,48 +139,18 @@ class Game {
             }
 
             const points = row.map(o => new THREE.Vector3(o.x, o.y, o.z))
-            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0xffffff}));
+            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0xffffff }));
             this.scene.add(line);
             v++
 
         }
 
-         for (var angle = 0; angle < Math.PI * 2; angle += stepV) {
+        function getPolarCoordinate(r, angle) {
 
-   
+            let x = r * Math.cos(angle);
+            let z = r * Math.sin(angle);
 
-            let row = []
-
-
-     for (var r = stepU*5; r < radius; r += stepU) {
-   
-
-
-
-                let x = r * Math.cos(angle);
-                let z = r * Math.sin(angle);
-
-
-                let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: 'whie' }))
-                mesh.position.x = x
-                mesh.position.z = z
-
-                // this.scene.add(mesh)
-                let y = Math.sqrt(x*x + z+z)*k
-
-                let tile = { u, v, w: angle, h: stepU, mesh, x,y,z }
-                tiles.push(tile)
-
-                row.push(tile)
-
-                u++
-            }
-
-            const points = row.map(o => new THREE.Vector3(o.x, o.y, o.z))
-            const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({color: 0xffffff}));
-            this.scene.add(line);
-            v++
-
+            return { x, z }
         }
     }
 
