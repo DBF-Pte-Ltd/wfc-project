@@ -126,21 +126,15 @@ class Game{
                 let x = r * Math.cos(angle);
                 let z = r * Math.sin(angle);
 
-                let a = getPolarCoordinate(r,angle)
-                let b = getPolarCoordinate(r,angle + stepV)
+                let r1 = r 
+                let r2 = r + stepU 
+                let t1 = angle 
+                let t2 =  angle + stepV 
 
-
-           /*     let ax = r * Math.cos(angle);
-                let az = r * Math.sin(angle);
-
-                let bx = r * Math.cos(angle + stepV);
-                let bz = r * Math.sin(angle + stepV);
-
-                let cx = (r + stepU) * Math.cos(angle + stepV);
-                let cz = (r + stepU) * Math.sin(angle + StepV);
-
-                let dx = (r + stepU) * Math.cos(angle);
-                let dz = (r + stepU) * Math.sin(angle);*/
+                let a = getPolarCoordinate(r1,t1)
+                let b = getPolarCoordinate(r1,t2)
+                let c = getPolarCoordinate(r2,t2)
+                let d = getPolarCoordinate(r2,t1)
 
 
 
@@ -171,10 +165,11 @@ class Game{
         function getPolarCoordinate(r, angle) {
 
             let x = r * Math.cos(angle);
-            let z = r * Math.sin(angle);
+            let y = r * Math.sin(angle);
+            return new THREE.Vector2(x,y)
 
-            return { x, z }
         }
+
     }
 
 
