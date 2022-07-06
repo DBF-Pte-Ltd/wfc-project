@@ -57,14 +57,14 @@ class Tile {
   }
   
   // Rotate a tile and its edges to create a new one
-  rotate(num) {
+  rotate(num, p5) {
     // Draw new tile
     const w = this.img.width;
     const h = this.img.height;
-    const newImg = createGraphics(w, h);
-    newImg.imageMode(CENTER);
+    const newImg = p5.createGraphics(w, h);
+    newImg.imageMode(p5.CENTER);
     newImg.translate(w / 2, h / 2);
-    newImg.rotate(HALF_PI * num);
+    newImg.rotate(p5.HALF_PI * num);
     newImg.image(this.img, 0, 0);
   
     // Rotate edges

@@ -46,8 +46,9 @@ class Cell {
 
 function StarOver(DIM) {
 
-	let blocks = {}
 
+	let blockSize = 50 
+	let blocks = {}
 	let grid = []
 
     // Create cell for each spot on the grid
@@ -56,7 +57,7 @@ function StarOver(DIM) {
     }
 
 
-    return { DIM, /*grid,*/ blocks }
+    return { blockSize, DIM, /*grid,*/ blocks }
 
 }
 

@@ -36,32 +36,39 @@ class Game {
         }
     }
 
-    restoreState({DIM, blocks}) {
+    restoreState(state) {
 
-        // console.log('restore state', blocks, )
 
-        const game = this;
+    	let {DIM, blocks} = state 
+
+
+    	this.state =  state 
+
 
         // grid
         const gridHelper = new THREE.GridHelper(DIM * 50, DIM);
-        game.scene.add(gridHelper);
+        this.scene.add(gridHelper);
 
         //raycaster and pointer
-        game.raycaster = new THREE.Raycaster();
-        game.pointer = new THREE.Vector2();
+        this.raycaster = new THREE.Raycaster();
+        this.pointer = new THREE.Vector2();
 
         //shift press handler
-        game.isShiftDown = false
+        this.isShiftDown = false
 
         const geometry = new THREE.PlaneGeometry(DIM * 50, DIM * 50);
         geometry.rotateX(-Math.PI / 2);
 
-        game.plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ visible: false }));
+       this.plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ visible: false }));
+  
 
         this.objects.push(game.plane)
-        this.scene.add(game.plane);
+        // this.scene.add(game.plane);
 
         Object.values(blocks).forEach(o=> this.update('add', o))
+
+
+        initP5js(this.scene)
 
     }
 
@@ -70,12 +77,13 @@ class Game {
         switch (key) {
             case 'add':
                 // console.log('Game update: ', key, value)
-                const remoteCubeMat = new THREE.MeshLambertMaterial({ color: value.color, map: new THREE.TextureLoader().load('assets/images/emoji.png') });
+                const remoteCubeMat = new THREE.MeshLambertMaterial({ color: value.color});
                 const voxel = new THREE.Mesh(game.player.cubeGeo, remoteCubeMat);
                 voxel.position.copy(value.position);
                 voxel.uuid = value.uuid
                 game.scene.add(voxel);
                 game.objects.push(voxel);
+                startOver()
                 break;
             case 'remove':
                 const objectIndex = game.objects.findIndex(o => o.uuid === value.uuid)
@@ -193,6 +201,19 @@ class Game {
     animate() {
         const game = this;
         const dt = this.clock.getDelta();
+
+
+        if (animatedMesh){
+
+        	animatedMesh.material.map.dispose()
+        	animatedMesh.material.map =  new THREE.CanvasTexture(myP5.oCanvas)
+            animatedMesh.material.needsUpdate = true;
+ 
+
+        }
+
+
+            
 
         requestAnimationFrame(function() { game.animate(); });
         this.updateRemotePlayers(dt);

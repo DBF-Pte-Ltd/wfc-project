@@ -1,10 +1,4 @@
-// Wave Function Collapse (tiled model)
-// The Coding Train / Daniel Shiffman
-// https://thecodingtrain.com/challenges/171-wave-function-collapse
-// https://youtu.be/0zac-cDzJwA
 
-// Code from Challenge: https://editor.p5js.org/codingtrain/sketches/pLW3_PNDM
-// Corrected and Expanded: https://github.com/CodingTrain/Wave-Function-Collapse
 
 // Array for tiles and tile images
 const tiles = [];
@@ -61,6 +55,8 @@ function setup() {
 }
 
 function startOver() {
+
+  console.log(game.state)
   // Create cell for each spot on the grid
   for (let i = 0; i < DIM * DIM; i++) {
     grid[i] = new Cell(tiles.length);
