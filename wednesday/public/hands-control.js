@@ -23,6 +23,9 @@ var myHands = []; // hands detected in this browser
 var handMeshes = {}; // these are threejs objects that makes up the rendering of the hands
                      // stored as { userId : Array<Object3D> }
 
+
+var handCollection = new THREE.Object3D()                     
+
 // html canvas for drawing debug view
 var dbg = document.createElement("canvas").getContext('2d');
 dbg.canvas.style.position="absolute";
@@ -39,11 +42,14 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement ); */
 
+const videoConstraints = {width: { min: 420, ideal: 480, max: 1080 },
+  height: { min: 420, ideal: 480, max: 1080 } }
+
 // read video from webcam
 var capture = document.createElement("video");
 capture.playsinline="playsinline"
 capture.autoplay="autoplay"
-navigator.mediaDevices.getUserMedia({audio:false,video:true}).then(function(stream){
+navigator.mediaDevices.getUserMedia({audio:false,video:videoConstraints}).then(function(stream){
   window.stream = stream;
   capture.srcObject = stream;
 })
@@ -57,8 +63,9 @@ capture.style.zIndex =-100 // "send to back"
 capture.onloadeddata = function(){
   console.log("video initialized");
   videoDataLoaded = true;
-  dbg.canvas.width = capture.videoWidth /2; // half size
-  dbg.canvas.height= capture.videoHeight/2;
+  dbg.canvas.width = capture.videoWidth ; // half size
+  dbg.canvas.height= capture.videoHeight;
+  dbg.canvas.style.transform = 'scale(-1, 1)';
   
   game.camera.position.z = capture.videoWidth/2; // rough estimate for suitable camera distance based on FOV
 }
@@ -81,7 +88,9 @@ function updateMeshesFromServerData(remoteData, game){
     // console.log('Remote data hands:: ', data.hands)
     if(!data.hands) continue;
     if (!handMeshes[data.id] && data.hands.length){
-      handMeshes[data.id] = [];
+      handMeshes[data.id] = new THREE.Object3D();
+
+      console.log(data.hands)
       
       for (var i = 0; i < 21; i++){ // 21 keypoints
         var {isPalm,next} = getLandmarkProperty(i);
@@ -100,18 +109,21 @@ function updateMeshesFromServerData(remoteData, game){
         
         obj.add( mesh );
         // console.log('Made a hand:: ', obj)
-        game.scene.add(obj);
-        handMeshes[data.id].push(obj);
-      }
+        handMeshes[data.id].add(obj);
+    }
+    handCollection.add(handMeshes[data.id])
+    // game.scene.add(handMeshes[data.id]);
+    game.scene.add(handCollection);
+
     }
   }
   // next, we remove the hands that are already gone in the server
   for (var id in handMeshes){
     const data = remoteData.find(d => d.id === id)
     if (!data || !data.hands.length){
-      for (var i = 0; i < handMeshes[id].length; i++){
-        game.scene.remove( handMeshes[id][i] );
-      }
+        if(handMeshes[id].children?.length) handMeshes[id].remove( ...handMeshes[id].children );
+      /* for (var i = 0; i < handMeshes[id].length; i++){
+      } */
       delete handMeshes[id];
     }
   }
@@ -123,6 +135,9 @@ function updateMeshesFromServerData(remoteData, game){
   
   // move the meshes and orient them
   for (var id in handMeshes){
+    handCollection.rotation.x = 0
+    handCollection.rotation.z = 0
+    // handCollection.rotation.z = 0
     const data = remoteData.find(d => d.id === id)
     if (!data || !data.hands.length){
       // we checked this before, doing it again in case we modify previous logic
@@ -131,39 +146,49 @@ function updateMeshesFromServerData(remoteData, game){
 
     const averageHandPosition = new THREE.Vector3()
 
-    for (var i = 0; i < handMeshes[id].length; i++){
+    for (var i = 0; i < handMeshes[id].children.length; i++){
       
       var {isPalm,next} = getLandmarkProperty(i);
+
       
-      var p0 = webcam2space(...data.hands[0].landmarks[i   ]);  // one end of the bone
+    //   data.hands[0].landmarks[next][2] += 500
+      
+      var p0 = webcam2space(...data.hands[0].landmarks[i]);  // one end of the bone
       var p1 = webcam2space(...data.hands[0].landmarks[next]);  // the other end of the bone
       
       // compute the center of the bone (midpoint)
       var mid = p0.clone().lerp(p1,0.5);
     //   mid.add(data.position)
     //   const position = data.position
-      handMeshes[id][i].position.set(mid.x,mid.y,mid.z);
+      handMeshes[id].children[i].position.set(mid.x,mid.y,mid.z);
       
       // compute the length of the bone
-      handMeshes[id][i].scale.z = p0.distanceTo(p1);
+      handMeshes[id].children[i].scale.z = p0.distanceTo(p1);
+
       
       // compute orientation of the bone
-      handMeshes[id][i].lookAt(p1);
-    // handMeshes[id][i].lookAt(data.position);
+      handMeshes[id].children[i].lookAt(p1);
+      // handMeshes[id][i].lookAt(data.position);
+      
+    
+    //   handMeshes[id].children[i].position.add(data.position)
 
-      handMeshes[id][i].position.add(data.position)
-
-    //   handMeshes[id][i].rotation.x = -Math.PI/2;
 
       if(id === game.player.id) {
-        averageHandPosition.add(handMeshes[id][i].position)
-    }
+            averageHandPosition.add(handMeshes[id].children[i].position)
+        }
     
-}
-averageHandPosition.multiplyScalar(1/21)
-game.repaintCubes(averageHandPosition)
-// console.log('averageHandPosition is:: ', id, averageHandPosition)
-}
+    }
+
+
+    handCollection.rotation.x = Math.PI/2
+    handCollection.rotation.z = Math.PI
+    averageHandPosition.multiplyScalar(1/21)
+    averageHandPosition.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI/2)
+    averageHandPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
+    // console.log('averageHandPosition is:: ', id, averageHandPosition)
+    game.repaintCubes(averageHandPosition)
+    }
 }
 
 
@@ -246,13 +271,13 @@ function uuid2color(uuid){
 // transform webcam coordinates to threejs 3d coordinates
 function webcam2space(x,y,z){
   return new THREE.Vector3(
-     (x-capture.videoWidth /2),
-    -(y-capture.videoHeight/2), // in threejs, +y is up
-    - z
+     2*(x-capture.videoWidth /2),
+    -2*(y-capture.videoHeight/2), // in threejs, +y is up
+    - 2*z
   )
 }
 
-function render() {
+/* function render() {
   requestAnimationFrame(render); // this creates an infinite animation loop
     
   if (handposeModel && videoDataLoaded){ // model and video both loaded
@@ -297,4 +322,4 @@ function render() {
 //   renderer.render( scene, camera );
 }
 
-// render(); // kick off the rendering loop!
+// render(); // kick off the rendering loop! */

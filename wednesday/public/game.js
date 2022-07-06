@@ -335,6 +335,7 @@ class Game{
               // tell the server about our updates!
             //   game.player.socket.emit('client-update',{hands:myHands});
             game.player.hands = myHands
+            if(game.player.hands[0]) game.player.hands[0].landmarks.forEach(l => l[2]+=200)
             game.player.updateSocket()
             })
           }
@@ -344,15 +345,15 @@ class Game{
           dbg.save();
           dbg.fillStyle="red";
           dbg.strokeStyle="red";
-          dbg.scale(0.5,0.5); //halfsize;
+        //   dbg.scale(0.5,0.5); //halfsize;
           
-          dbg.drawImage(capture,0,0);
+        //   dbg.drawImage(capture,0,0);
           drawHands(myHands);
           dbg.restore();
           
           dbg.save();
           dbg.fillStyle="red";
-          dbg.fillText(statusText,2,60);
+        //   dbg.fillText(statusText,2,60);
           dbg.restore();
 
         this.renderer.render(this.scene, this.camera);
@@ -406,6 +407,8 @@ class Game{
 
     repaintCubes(position) {
         position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 )
+        console.log('position:: ', position)
+        this.player.rollOverMesh.position.copy(position)
 
         for(const object of game.objects) {
             if(position.equals(object.position)) {
