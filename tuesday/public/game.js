@@ -1,30 +1,3 @@
-/*
-
-https://learn.ml5js.org/#/reference/handpose
-
-let predictions = [];
-const video = document.getElementById('video');
-
-// Create a new handpose method
-const handpose = ml5.handpose(video, modelLoaded);
-
-// When the model is loaded
-function modelLoaded() {
-  console.log('Model Loaded!');
-}
-
-// Listen to new 'hand' events
-handpose.on('hand', results => {
-  predictions = results;
-});
-
-
-const handpose = ml5.handpose(?video, ?options, ?callback);
-*/
-
-
-
-
 class Game {
     constructor() {
         if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -36,14 +9,10 @@ class Game {
         this.camera;
         this.scene;
         this.renderer;
-
 		this.remotePlayers = []
 		this.initialisingPlayers = []
 		this.remoteData = []
-
-
         this.objects = []
-
         this.container = document.createElement('div');
         this.container.style.height = '100%';
         document.body.appendChild(this.container);
@@ -60,6 +29,16 @@ class Game {
             console.error(JSON.stringify(error));
         }
     }
+
+
+    restoreState(){
+
+
+        console.log('restore state')
+
+    }
+
+
 
 	update(key, value) {
 		switch(key) {

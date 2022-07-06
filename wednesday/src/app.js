@@ -5,7 +5,7 @@ const http = require('http').Server(app);
 const io = require("socket.io")(http);
 
 //central state of voxel-painter
-const state = {}
+
 
 app.use(express.static('../public/'));
 
@@ -20,14 +20,59 @@ http.listen(3000, function(){
 });
 
 
+
+
+// Class for a cell
+class Cell {
+  constructor(value) {
+    // Is it collapsed?
+    this.collapsed = false;
+
+    // Initial options via constructor
+    if (value instanceof Array) {
+      this.options = value;
+    } else {
+      // or all options to start
+      this.options = [];
+      for (let i = 0; i < value; i++) {
+        this.options[i] = i;
+      }
+    }
+  }
+}
+
+
+
+
+function StarOver(DIM) {
+
+	let grid = []
+
+    // Create cell for each spot on the grid
+    for (let i = 0; i < DIM * DIM * DIM; i++) {
+        grid[i] = new Cell(5);
+    }
+
+
+    return { DIM, grid }
+
+}
+
+const state = StarOver(20)
+
 function newConnection(socket){
+
+
+	let {id} = socket
 
 	socket.userData = { avatar:null, position: null, color: null};
 
 	console.log('New player connected.', socket.id)
- 
-	socket.emit('player:joined', { id:socket.id });
-	// socket.broadcast.emit('player:new-remote', { id: socket.id });
+
+
+    socket.emit('updatePlayer', { id }); // send state 
+    socket.emit('restoreState', { state }); // send state 
+    
 	
     socket.on('disconnect', function(){
 		socket.broadcast.emit('player:left', { id: socket.id });
@@ -40,20 +85,22 @@ function newConnection(socket){
 
 	function initPlayer(data) {
 		console.log(`socket.init ${data.avatar}`);
-		socket.userData.avatar = data.avatar;
-		socket.userData.color = data.color;
-		socket.userData.position = data.position;
+		for (let prop in data){
+			socket['userData'][prop] = data[prop]
+		}
 	}
 
 	function updatePlayer(data) {
 		// console.log('updatePlayer:: ', data.position)
-		socket.userData.position = data.position;
-		// socket.broadcast.emit("update", data);
+		for (let prop in data){
+			socket['userData'][prop] = data[prop]
+		}
 	}
 
-	function placeBlock(data) {
-		// console.log('add:: ', data)
-		socket.broadcast.emit("add", data);
+	function placeBlock(block) {
+
+		state[block.uuid] = block 
+		socket.broadcast.emit("add", block);
 	}
 	
 	function removeBlock(data) {
@@ -87,6 +134,9 @@ setInterval(function(){
 	// console.log('Sending remote data:: ', pack.map(p => p.position))
 	if (pack.length>0) io.emit('remoteData', pack);
 }, 40);
+
+
+
 
 
 

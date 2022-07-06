@@ -67,6 +67,24 @@ class PlayerLocal extends Player {
             player.id = data.id
         })
 
+
+        
+        socket.on('updatePlayer', function(data) {
+
+            for (let prop in data) {
+                player[prop] = data[prop]
+            }
+
+        })
+        
+
+
+        socket.on('restoreState', function({state}) {
+
+            game.restoreState(state)
+
+        })
+
         /* socket.on('player:new-remote', function(data) {
             player.game.update('player:new-remote', data)
         }) */
