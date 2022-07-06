@@ -154,7 +154,7 @@ function initP5Canvas(name) {
 
         p.draw = function() {
 
-            let DIM = 40
+            let DIM = 20
 
             // Draw the grid
             const w = p.width / DIM;
@@ -196,7 +196,7 @@ function initP5Canvas(name) {
 
             if (!gridCopy[0]) {
 
-              // startOver()
+              startOver()
               return  
             }  
             let len = gridCopy[0].options.length;
@@ -297,7 +297,7 @@ function startOver() {
 
 
 
-    for (let i = 0; i < DIM * DIM*4; i++) {
+    for (let i = 0; i < DIM * DIM; i++) {
         grid[i] = new Cell(tiles.length);
     }
 
@@ -306,9 +306,9 @@ function startOver() {
 
         let {position} = o 
         let {x,y,z} = position 
-        let i = (x+2*DIM*blockSize/2)/blockSize - 0.5 
-        let j = (y+2*DIM*blockSize/2)/blockSize - 0.5
-        let k = (z+2*DIM*blockSize/2)/blockSize - 0.5 
+        let i = (x+DIM*blockSize/2)/blockSize - 0.5 
+        let j = (y+DIM*blockSize/2)/blockSize - 0.5
+        let k = (z+DIM*blockSize/2)/blockSize - 0.5 
 
 
         console.log(j)
@@ -317,14 +317,6 @@ function startOver() {
         grid[i + k * DIM].collapsed = true;
         grid[i + k * DIM].options = [0]
 
-        grid[i + 1 + k * DIM].collapsed = true;
-        grid[i + 1 + k * DIM].options = [0]
-
-        grid[i + (k+1) * DIM].collapsed = true;
-        grid[i + (k+1) * DIM].options = [0]
-
-        grid[i + 1 + (k+1) * DIM].collapsed = true;
-        grid[i + 1 + (k+1) * DIM].options = [0]
         // }
 
     })

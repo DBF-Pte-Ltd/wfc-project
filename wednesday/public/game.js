@@ -62,7 +62,7 @@ class Game {
        this.plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ visible: false }));
   
 
-        this.objects.push(game.plane)
+        this.objects.push(this.plane)
         // this.scene.add(game.plane);
 
         Object.values(blocks).forEach(o=> this.update('add', o))
