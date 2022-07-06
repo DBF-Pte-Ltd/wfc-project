@@ -279,7 +279,8 @@ class Game{
 				if (iplayer===undefined){
 					let rplayer;
 					game.remotePlayers.forEach( function(player){
-						if (player.id == data.id) rplayer = player;
+                        console.log('Player:: ', player)
+						if (player?.id == data.id) rplayer = player;
 					});
 
 					if (rplayer===undefined){
