@@ -1,0 +1,25 @@
+     body {
+
+         margin: 0;
+         padding: 0;
+         height: 100vh;
+         background-image: linear-gradient(rgb(112, 214, 175), rgb(223, 201, 107));
+
+     }
+
+     #p5js {
+         position: absolute;
+         top: 0%;
+         bottom: 0%;
+         width: 512px;
+
+         height: 512px;
+
+     }
+
+     #threeJS {
+         position: absolute;
+         left: 0%;
+         bottom: 0%;
+         width: 100%;
+     }
