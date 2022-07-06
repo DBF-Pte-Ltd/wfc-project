@@ -46,6 +46,8 @@ class Cell {
 
 function StarOver(DIM) {
 
+	let blocks = {}
+
 	let grid = []
 
     // Create cell for each spot on the grid
@@ -54,8 +56,13 @@ function StarOver(DIM) {
     }
 
 
-    return { DIM, grid }
+    return { DIM, /*grid,*/ blocks }
 
+}
+
+let changes = {
+	add:{},
+	remove:{}
 }
 
 const state = StarOver(20)
@@ -68,6 +75,8 @@ function newConnection(socket){
 	socket.userData = { avatar:null, position: null, color: null};
 
 	console.log('New player connected.', socket.id)
+
+
 
 
     socket.emit('updatePlayer', { id }); // send state 
@@ -91,6 +100,7 @@ function newConnection(socket){
 	}
 
 	function updatePlayer(data) {
+
 		// console.log('updatePlayer:: ', data.position)
 		for (let prop in data){
 			socket['userData'][prop] = data[prop]
@@ -99,13 +109,16 @@ function newConnection(socket){
 
 	function placeBlock(block) {
 
-		state[block.uuid] = block 
+		state['blocks'][block.uuid] = block // add block to the state right? 
+		changes['add'].push(block)  // add block to the state right? 
+		
 		socket.broadcast.emit("add", block);
 	}
 	
-	function removeBlock(data) {
+	function removeBlock(block) {
 		// console.log('remove:: ', data)
-		socket.broadcast.emit("remove", data);
+		delete state['blocks'][block.uuid] 
+		socket.broadcast.emit("remove", block);
 	}
 
 }
@@ -128,11 +141,20 @@ setInterval(function(){
 				avatar: socket.userData.avatar,
 				color: socket.userData.color,
 				position: socket.userData.position,
-			});    
+			});  
+
+
 		}
+
     }
+
+
 	// console.log('Sending remote data:: ', pack.map(p => p.position))
 	if (pack.length>0) io.emit('remoteData', pack);
+
+	changes.add = []
+	changes.remove = []
+	
 }, 40);
 
 

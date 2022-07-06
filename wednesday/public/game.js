@@ -34,11 +34,9 @@ class Game {
         }
     }
 
-    restoreState(data) {
+    restoreState({DIM, blocks}) {
 
-        console.log('restore state', data)
-
-        let DIM = 20
+        // console.log('restore state', blocks, )
 
         const game = this;
 
@@ -58,8 +56,10 @@ class Game {
 
         game.plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ visible: false }));
 
-        game.objects.push(game.plane)
-        game.scene.add(game.plane);
+        this.objects.push(game.plane)
+        this.scene.add(game.plane);
+
+        Object.values(blocks).forEach(o=> this.update('add', o))
 
     }
 
@@ -160,7 +160,7 @@ class Game {
                 if (iplayer === undefined) {
                     let rplayer;
                     game.remotePlayers.forEach(function(player) {
-                        console.log('Player:: ', player)
+                        // console.log('Player:: ', player)
                         if (player?.id == data.id) rplayer = player;
                     });
 
