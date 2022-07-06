@@ -1,5 +1,7 @@
 class Game {
+
     constructor() {
+     
         if (!Detector.webgl) Detector.addGetWebGLMessage();
 
         this.container;

@@ -1,3 +1,4 @@
+
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
@@ -110,35 +111,3 @@ setInterval(function() {
     if (pack.length > 0) io.emit('remoteData', pack);
 }, 40);
 
-
-function StarOver(DIM) {
-
-    // Create cell for each spot on the grid
-    for (let i = 0; i < DIM * DIM * DIM; i++) {
-        grid[i] = new Cell(5);
-    }
-
-
-    return { DIM, grid }
-
-}
-
-
-// Class for a cell
-class Cell {
-  constructor(value) {
-    // Is it collapsed?
-    this.collapsed = false;
-
-    // Initial options via constructor
-    if (value instanceof Array) {
-      this.options = value;
-    } else {
-      // or all options to start
-      this.options = [];
-      for (let i = 0; i < value; i++) {
-        this.options[i] = i;
-      }
-    }
-  }
-}

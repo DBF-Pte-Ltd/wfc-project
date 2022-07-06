@@ -100,7 +100,6 @@ function newConnection(socket){
 	}
 
 	function updatePlayer(data) {
-
 		// console.log('updatePlayer:: ', data.position)
 		for (let prop in data){
 			socket['userData'][prop] = data[prop]
@@ -108,15 +107,12 @@ function newConnection(socket){
 	}
 
 	function placeBlock(block) {
-
 		state['blocks'][block.uuid] = block // add block to the state right? 
 		changes['add'].push(block)  // add block to the state right? 
-		
 		socket.broadcast.emit("add", block);
 	}
 	
 	function removeBlock(block) {
-		// console.log('remove:: ', data)
 		delete state['blocks'][block.uuid] 
 		socket.broadcast.emit("remove", block);
 	}
