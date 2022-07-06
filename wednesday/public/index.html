@@ -18,14 +18,31 @@
 		<script src="./libs/toon3d.js"></script>
 		<script src="./libs/utils.js"></script>
 
+		<!-- Be sure to use tfjs 1.7.4, in tfjs 2 they broke their own handpose model-->
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@1.7.4/dist/tf-core.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@1.7.4/dist/tf-converter.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose@0.0.4/dist/handpose.min.js"></script>
+
+		<!-- socket.io -->
 		<script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
 		
 		<script src="./player.js"></script>
 		<script src="./game.js"></script>
+		<script src="./hands-control.js"></script>
+
 		<script>
 			document.addEventListener("DOMContentLoaded", function(){
 				const game = new Game();
 				window.game = game;//For debugging only
+
+				// tell the server we're ready!
+				// game.player.socket.emit('client-start')
+
+				// update our data everytime the server sends us an update
+				game.player.socket.on('server-update', function(data){
+				serverData = data;
+				// updateMeshesFromServerData();
+				})
 			});
 		</script>
 	</body>

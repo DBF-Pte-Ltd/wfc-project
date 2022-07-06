@@ -305,6 +305,8 @@ class Game{
 		
 		this.remotePlayers = remotePlayers;
 		this.remotePlayers.forEach(function(player){ player.update( ); });
+
+        updateMeshesFromServerData(this.remoteData, this)
 	}
 
     animate() {
@@ -313,6 +315,45 @@ class Game{
 
         requestAnimationFrame(function() { game.animate(); });
 		this.updateRemotePlayers(dt);
+
+        if (handposeModel && videoDataLoaded){ // model and video both loaded
+    
+            handposeModel.estimateHands(capture).then(function(_hands){
+              // we're handling an async promise
+              // best to avoid drawing something here! it might produce weird results due to racing
+              
+              myHands = _hands; // update the global myHands object with the detected hands
+              if (!myHands.length){
+                // haven't found any hands
+                statusText = "Show some hands!"
+              }else{
+                // display the confidence, to 3 decimal places
+                statusText = "Confidence: "+ (Math.round(myHands[0].handInViewConfidence*1000)/1000);
+                
+              }
+              
+              // tell the server about our updates!
+            //   game.player.socket.emit('client-update',{hands:myHands});
+            game.player.hands = myHands
+            game.player.updateSocket()
+            })
+          }
+          
+          dbg.clearRect(0,0,dbg.canvas.width,dbg.canvas.height);
+          
+          dbg.save();
+          dbg.fillStyle="red";
+          dbg.strokeStyle="red";
+          dbg.scale(0.5,0.5); //halfsize;
+          
+          dbg.drawImage(capture,0,0);
+          drawHands(myHands);
+          dbg.restore();
+          
+          dbg.save();
+          dbg.fillStyle="red";
+          dbg.fillText(statusText,2,60);
+          dbg.restore();
 
         this.renderer.render(this.scene, this.camera);
     }
@@ -331,7 +372,6 @@ class Game{
 			// console.log('Update socket:: ', game.player.updateSocket)
 			game.player.position = game.player.rollOverMesh.position
 			game.player.updateSocket()
-			// game.player.socket.emit("update", { uuid: game.player.id, position: game.player.rollOverMesh.position, color: game.player.color });
         }
 
     }
@@ -363,6 +403,18 @@ class Game{
 			}
 		}
 	}
+
+    repaintCubes(position) {
+        position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 )
+
+        for(const object of game.objects) {
+            if(position.equals(object.position)) {
+                object.material = object.material.clone()/* .color.set(new THREE.Color(0xffffff)) */
+                object.material.color.setHex( 0xffffff )
+                console.log('Found intersection!')
+            }
+        }
+    }
     
 
     onDocumentKeyDown(event) {

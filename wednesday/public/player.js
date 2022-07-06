@@ -106,11 +106,12 @@ class PlayerLocal extends Player {
     }
 
     updateSocket() {
-        // console.log('Updating player socket!', this.position)
+        // console.log('Updating player socket!', this.hands)
         this.socket.emit('update', { 
 			avatar:this.avatar, 
 			color: this.color,
 			position: this.position,
+            hands: this.hands
 		});
     }
 }

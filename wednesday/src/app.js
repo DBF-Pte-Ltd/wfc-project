@@ -43,11 +43,13 @@ function newConnection(socket){
 		socket.userData.avatar = data.avatar;
 		socket.userData.color = data.color;
 		socket.userData.position = data.position;
+		socket.userData.hands = data.hands;
 	}
 
 	function updatePlayer(data) {
 		// console.log('updatePlayer:: ', data.position)
 		socket.userData.position = data.position;
+		socket.userData.hands = data.hands;
 		// socket.broadcast.emit("update", data);
 	}
 
@@ -81,6 +83,7 @@ setInterval(function(){
 				avatar: socket.userData.avatar,
 				color: socket.userData.color,
 				position: socket.userData.position,
+				hands: socket.userData.hands,
 			});    
 		}
     }
