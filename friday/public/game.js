@@ -424,48 +424,13 @@ class Game {
 
     if (intersects.length > 0) {
       const intersect = intersects[0];
-      // delete cube
       if (game.isCrtlDown) {
-        if (intersect.object !== game.plane) {
-          const voxel = intersect.object;
-          game.scene.remove(voxel);
-          delete game.voxels[voxel.uuid];
-          const blockIndex = game.objects.findIndex(
-            (o) => o.uuid === voxel.uuid
-          );
-
-          if (blockIndex > -1) {
-            const block = game.objects[blockIndex];
-            game.scene.remove(block);
-            game.objects.splice(blockIndex, 1);
-            game.player.socket.emit("remove", {
-              uuid: block.uuid,
-            });
-          }
-        }
-
-        // create cube
+        // delete cube
+        game.destroyBlock(intersect);
       } else {
+        // create cube
         // console.log("add voxel");
-
-        let position = new THREE.Vector3();
-        position.copy(intersect.point).add(intersect.face.normal);
-        position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-
-        let uuid = generateUUID();
-        let color = game.player.color;
-
-        let params = { position, color, uuid };
-
-        game.state["blocks"][uuid] = params; // need to update local state
-        game.update("add", params); // update local
-        game.player.socket.emit("add", params); // update global
-
-        if (runWFC) {
-          console.log("add modifier");
-          wfcModifiers.push(params); // event loop wfc
-          wfcDone = false;
-        }
+        game.createBlock(intersect);
       }
     }
   }
@@ -514,49 +479,57 @@ class Game {
 
     if (intersects.length > 0) {
       const intersect = intersects[0];
-      // delete cube
       if (game.isCrtlDown) {
-        if (intersect.object !== game.plane) {
-          const voxel = intersect.object;
-          game.scene.remove(voxel);
-          delete game.voxels[voxel.uuid];
-          const blockIndex = game.objects.findIndex(
-            (o) => o.uuid === voxel.uuid
-          );
-
-          if (blockIndex > -1) {
-            const block = game.objects[blockIndex];
-            game.scene.remove(block);
-            game.objects.splice(blockIndex, 1);
-            game.player.socket.emit("remove", {
-              uuid: block.uuid,
-            });
-          }
-        }
-
-        // create cube
+        // delete cube
+        game.destroyBlock(intersect);
       } else {
+        // create cube
         // console.log("add voxel");
-
-        let position = new THREE.Vector3();
-        position.copy(intersect.point).add(intersect.face.normal);
-        position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-
-        let uuid = generateUUID();
-        let color = game.player.color;
-
-        let params = { position, color, uuid };
-
-        game.state["blocks"][uuid] = params; // need to update local state
-        game.update("add", params); // update local
-        game.player.socket.emit("add", params); // update global
-
-        if (runWFC) {
-          console.log("add modifier");
-          wfcModifiers.push(params); // event loop wfc
-          wfcDone = false;
-        }
+        game.createBlock(intersect);
       }
+    }
+  }
+
+  destroyBlock(intersect) {
+    const game = this;
+
+    if (intersect.object !== game.plane) {
+      const voxel = intersect.object;
+      game.scene.remove(voxel);
+      delete game.voxels[voxel.uuid];
+      const blockIndex = game.objects.findIndex((o) => o.uuid === voxel.uuid);
+
+      if (blockIndex > -1) {
+        const block = game.objects[blockIndex];
+        game.scene.remove(block);
+        game.objects.splice(blockIndex, 1);
+        game.player.socket.emit("remove", {
+          uuid: block.uuid,
+        });
+      }
+    }
+  }
+
+  createBlock(intersect) {
+    const game = this;
+
+    let position = new THREE.Vector3();
+    position.copy(intersect.point).add(intersect.face.normal);
+    position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+
+    let uuid = generateUUID();
+    let color = game.player.color;
+
+    let params = { position, color, uuid };
+
+    game.state["blocks"][uuid] = params; // need to update local state
+    game.update("add", params); // update local
+    game.player.socket.emit("add", params); // update global
+
+    if (runWFC) {
+      console.log("add modifier");
+      wfcModifiers.push(params); // event loop wfc
+      wfcDone = false;
     }
   }
 }
