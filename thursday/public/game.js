@@ -332,7 +332,7 @@ class Game {
                         // console.log('Landmarks:: ', dist)
 
                         let avgHandPos = AVERAGE(game.handElevations)
-                        if(avgHandPos>2500) avgHandPos = 1000
+                        if(avgHandPos>1500) avgHandPos = 1500
 
                         game.player.hands[0].landmarks.forEach((l) => (l[2] += avgHandPos));
                     }
