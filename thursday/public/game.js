@@ -16,6 +16,8 @@ class Game {
 
         this.objects = [];
 
+        this.handElevation = 200
+
         this.container = document.createElement("div");
         this.container.style.height = "100%";
         document.body.appendChild(this.container);
@@ -45,6 +47,8 @@ class Game {
         //raycaster and pointer
         this.raycaster = new THREE.Raycaster();
         this.down = new THREE.Vector3(0, -1, 0);
+        this.up = new THREE.Vector3(0, 1, 0);
+
         this.pointer = new THREE.Vector2();
 
         //shift press handler
@@ -272,12 +276,12 @@ class Game {
                     game.player.hands = myHands;
                     if (game.player.hands[0]) {
 
-                      const pt1 = new THREE.Vector3(...game.player.hands[0].landmarks[0])
+                     /*  const pt1 = new THREE.Vector3(...game.player.hands[0].landmarks[0])
                       const pt2 = new THREE.Vector3(...game.player.hands[0].landmarks[1])
-                      const dist = 50 + 10000/pt1.distanceTo(pt2)
+                      const dist = 50 + 10000/pt1.distanceTo(pt2) */
                       // console.log('Landmarks:: ', dist)
 
-                        game.player.hands[0].landmarks.forEach((l) => (l[2] += dist));
+                        game.player.hands[0].landmarks.forEach((l) => (l[2] += game.handElevation));
                     }
                     game.player.updateSocket();
                 });
@@ -394,17 +398,18 @@ class Game {
         //do things when hand moves
 
         position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-        // console.log('position:: ', position)
         this.player.rollOverMesh.position.copy(position);
 
-        /* for (const object of game.objects) {
-          if (position.equals(object.position)) {
-            object.material =
-              object.material.clone(); 
-            object.material.color.setHex(0xffffff);
-            console.log("Found intersection!");
-          }
-        } */
+        this.raycaster.set(position, this.up);
+        const intersectsAbove = this.raycaster.intersectObjects(this.objects, false);
+        if(intersectsAbove.length) {
+          const upmost = intersectsAbove.pop()
+          game.handElevation = upmost.point.y + 50
+        }
+        else {
+          game.handElevation = 200
+        }
+
 
         this.raycaster.set(position, this.down);
         const intersects = this.raycaster.intersectObjects(this.objects, false);
