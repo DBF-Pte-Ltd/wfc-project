@@ -1,3 +1,5 @@
+let enableHandTracking = false 
+
 class Game {
     constructor() {
         if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -29,6 +31,7 @@ class Game {
         this.clock = new THREE.Clock();
 
         this.animationQueue = []
+
 
         this.init();
 
@@ -67,7 +70,7 @@ class Game {
         // this.scene.add(game.plane);
 
         Object.values(blocks).forEach((o) => this.update("add", o));
-        initP5js(this.scene);
+        // initP5js(this.scene);
     }
 
     update(key, value) {
@@ -82,7 +85,7 @@ class Game {
                 voxel.uuid = value.uuid;
                 game.scene.add(voxel);
                 game.objects.push(voxel);
-                game.animationQueue.push({object: voxel, duration: 24})
+                game.animationQueue.push({ object: voxel, duration: 24 })
 
                 this.updateTextures()
                 break;
@@ -105,6 +108,34 @@ class Game {
         }
     }
 
+    intializeTextures() {
+
+
+        let object = {}
+
+
+        let category = ['commercial', 'industrial', 'institutional', 'office', 'parking', 'recreational', 'residential']
+        let values = ['1-20', '1-30', '1-50', '1-60', '1-80', '1-90']
+
+
+        for (let i = 0; i < category.length; i++) {
+
+            for (let j = 0; j < values.length; j++) {
+
+                let str1 = category[i]
+                let str2 = values[j]
+                let path = 'assets/facades/' + str1 + '/' + str2 + '.jpg'
+
+                object[str1] = {str2:new THREE.TextureLoader().load(path)
+                  }
+           
+            }
+        }
+
+        return object
+
+    }
+
 
     updateTextures() {
 
@@ -112,14 +143,12 @@ class Game {
 
                 let category = ['commercial', 'industrial', 'institutional', 'office', 'parking', 'recreational', 'residential']
                 let values = ['1-20', '1-30', '1-50', '1-60', '1-80', '1-90']
-
                 let str1 = category[Math.floor(Math.random() * category.length)]
                 let str2 = values[Math.floor(Math.random() * values.length)]
 
-                let path = 'assets/facades/' + str1 + '/' + str2 + '.jpg'
-                // console.log(path)
-
-                o.material.map = new THREE.TextureLoader().load(path)
+                console.log(this.textures)
+                console.log(str1,str2)
+                o.material.map = this.textures[str1][str2]
             }
 
         )
@@ -129,12 +158,15 @@ class Game {
     init() {
 
 
+
         this.camera = new THREE.PerspectiveCamera(
             45,
             window.innerWidth / window.innerHeight,
             10,
             20000
         );
+
+        this.textures = this.intializeTextures()
         this.camera.position.set(500, 400, -500);
         this.scene = new THREE.Scene();
 
@@ -245,24 +277,24 @@ class Game {
         const game = this;
         const dt = this.clock.getDelta();
 
-        if (animatedMesh) {
-            animatedMesh.material.map.dispose();
-            animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
-            animatedMesh.material.needsUpdate = true;
-        }
+        /*        if (animatedMesh) {
+                    animatedMesh.material.map.dispose();
+                    animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
+                    animatedMesh.material.needsUpdate = true;
+                }*/
 
         const animationQueue = []
 
         game.animationQueue.forEach(anim => {
-          anim.object.scale.x = Math.sin(Math.PI*(90/(12-anim.duration))/180) + 1
-          anim.object.scale.z = Math.sin(Math.PI*(90/(12-anim.duration))/180) + 1
-          anim.duration--
+            anim.object.scale.x = Math.sin(Math.PI * (90 / (12 - anim.duration)) / 180) + 1
+            anim.object.scale.z = Math.sin(Math.PI * (90 / (12 - anim.duration)) / 180) + 1
+            anim.duration--
 
-          if(anim.duration) animationQueue.push(anim)
-          else {
-            anim.object.scale.x = 1
-            anim.object.scale.z = 1
-          }
+            if (anim.duration) animationQueue.push(anim)
+            else {
+                anim.object.scale.x = 1
+                anim.object.scale.z = 1
+            }
         })
 
         game.animationQueue = animationQueue
@@ -272,7 +304,7 @@ class Game {
         });
         this.updateRemotePlayers(dt);
 
-        if (true) {
+        if (enableHandTracking) {
 
             if (handposeModel && videoDataLoaded) {
                 // model and video both loaded
@@ -294,10 +326,10 @@ class Game {
                     game.player.hands = myHands;
                     if (game.player.hands[0]) {
 
-                     /*  const pt1 = new THREE.Vector3(...game.player.hands[0].landmarks[0])
-                      const pt2 = new THREE.Vector3(...game.player.hands[0].landmarks[1])
-                      const dist = 50 + 10000/pt1.distanceTo(pt2) */
-                      // console.log('Landmarks:: ', dist)
+                        /*  const pt1 = new THREE.Vector3(...game.player.hands[0].landmarks[0])
+                         const pt2 = new THREE.Vector3(...game.player.hands[0].landmarks[1])
+                         const dist = 50 + 10000/pt1.distanceTo(pt2) */
+                        // console.log('Landmarks:: ', dist)
 
                         game.player.hands[0].landmarks.forEach((l) => (l[2] += game.handElevation));
                     }
@@ -379,7 +411,7 @@ class Game {
                 position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
                 let uuid = generateUUID()
                 let color = game.player.color
-                
+
                 let params = { position, color, uuid }
 
                 game.state['blocks'][uuid] = params // need to update local state 
@@ -420,12 +452,11 @@ class Game {
 
         this.raycaster.set(position, this.up);
         const intersectsAbove = this.raycaster.intersectObjects(this.objects, false);
-        if(intersectsAbove.length) {
-          const upmost = intersectsAbove.pop()
-          game.handElevation = upmost.point.y + 50
-        }
-        else {
-          game.handElevation = 200
+        if (intersectsAbove.length) {
+            const upmost = intersectsAbove.pop()
+            game.handElevation = upmost.point.y + 50
+        } else {
+            game.handElevation = 200
         }
 
 
