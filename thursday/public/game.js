@@ -76,7 +76,7 @@ class Game {
                 voxel.uuid = value.uuid;
                 game.scene.add(voxel);
                 game.objects.push(voxel);
-                startOver();
+                // startOver();
                 break;
             case "remove":
                 const objectIndex = game.objects.findIndex(
@@ -181,7 +181,7 @@ class Game {
                     let rplayer;
                     game.remotePlayers.forEach(function(player) {
                         // console.log('Player:: ', player)
-                        if (player ? .id == data.id) rplayer = player;
+                        if (player?.id == data.id) rplayer = player;
                     });
 
                     if (rplayer === undefined) {
@@ -311,23 +311,14 @@ class Game {
                 }
                 // create cube
             } else {
-                // let position = new THREE.Vector3();
-                // position.copy(intersect.point).add(intersect.face.normal);
-                // position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-                // let uuid = generateUUID();
-                // let color = game.player.color;
-
-                // game.update("add", { position, color, uuid }); // update local
-                // game.player.socket.emit("add", { position, color, uuid }); // update global
-
 
                 let position = new THREE.Vector3()
                 position.copy(intersect.point).add(intersect.face.normal);
                 position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
                 let uuid = generateUUID()
                 let color = game.player.color
-
                 let params = { position, color, uuid }
+
 
                 game.state['blocks'][uuid] = params // need to update local state 
                 game.update("add", params) // update local 
@@ -394,11 +385,19 @@ class Game {
                 let uuid = generateUUID();
                 let color = this.player.color;
 
+                let params = { position, color, uuid }
+
                 this.update("add", { position, color, uuid }); // update local
                 this.player.socket.emit("add", { position, color, uuid }); // update global
+
+
+                game.state['blocks'][uuid] = params // need to update local state 
+                wfcDone = false
+                wfcModifiers.push(params) // event loop wfc 
+            
             }
         }
-    }
+    
 
 
     requestAnimationFrame(function() {
