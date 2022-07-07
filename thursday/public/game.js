@@ -1,4 +1,4 @@
-let enableHandTracking = true 
+let enableHandTracking = false 
 
 class Game {
     constructor() {
@@ -411,9 +411,12 @@ class Game {
 
                 console.log('add voxel')
 
+
                 let position = new THREE.Vector3()
                 position.copy(intersect.point).add(intersect.face.normal);
                 position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+
+
                 let uuid = generateUUID()
                 let color = game.player.color
 

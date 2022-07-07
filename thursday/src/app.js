@@ -22,6 +22,7 @@ http.listen(3000, function() {
 
 
 
+
 // Class for a cell
 class Cell {
     constructor(value) {
@@ -67,10 +68,8 @@ function StartOver(DIM) {
 
 }
 
-let changes = {
-    add: {},
-    remove: {}
-}
+
+let changes = []
 
 let state = StartOver(20)
 
@@ -114,11 +113,10 @@ function newConnection(socket) {
 
     function placeBlock(block) {
         state['blocks'][block.uuid] = block // add block to the state right? 
-
         checkGrid(state, block)
-
         changes['add'].push(block) // add block to the state right? 
         socket.broadcast.emit("add", block);
+
     }
 
     function removeBlock(block) {
@@ -129,15 +127,58 @@ function newConnection(socket) {
 }
 
 
-function checkGrid({grid}, block) {
+function checkGrid(state, block) {
 
-	console.log('check grid!')
-	let { i, j, k } = block
-	grid[i][j][k] = true 
+	let {grid,DIM} = state 
+
+
+	let { i, j, k } = getCoordinates(state,block)
+	grid[i][j][k] = block.uuid 
+
+
+	if (!check2DNeighbours(state, i,j,k)){
+
+		console.log('create hat! ')
+		block.shape = 'hat'
+		changes.push(block)
+
+	}
+
 
 
 
 }
+
+
+function check2DNeighbours(state, i,j,k){
+
+	let {grid, DIM} = state 
+
+	let a =  i + 1 
+	let b = i - 1 
+
+	let c = j + 1 
+	let d = j - 1 
+
+
+	if (a > DIM) return true 
+	if (b < 0) return true 
+	if (c > DIM) return true 
+	if (d < 0) return true 
+
+	if (grid[a][j][k]) return true
+	if (grid[b][j][k]) return true
+
+	if (grid[a][c][k]) return true
+	if (grid[i][c][k]) return true
+	if (grid[b][c][k]) return true
+
+	if (grid[a][c][d]) return true
+	if (grid[i][c][d]) return true
+	if (grid[b][c][d]) return true
+	
+}
+
 
 
 
@@ -183,9 +224,10 @@ setInterval(function() {
 
 
     // console.log('Sending remote data:: ', pack.map(p => p.position))
-    if (pack.length > 0) io.emit('remoteData', pack);
+    if (pack.length > 0) io.emit('remoteData', {pack, changes});
 
-    changes.add = []
-    changes.remove = []
+    changes = []
+
+  
 
 }, 40);
