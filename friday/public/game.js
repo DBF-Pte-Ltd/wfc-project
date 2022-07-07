@@ -76,7 +76,7 @@ class Game {
     // this.scene.add(game.plane);
 
     Object.values(blocks).forEach((o) => this.update("add", o));
-    initP5js(this.scene);
+    if (runWFC) initP5js(this.scene);
   }
 
   update(key, value) {
