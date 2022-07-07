@@ -63,8 +63,6 @@ function StartOver(DIM) {
         grid.push(row)
     }
 
-    console.log(grid)
-
     return { blockSize, DIM, grid, blocks }
 
 }
@@ -85,8 +83,6 @@ function newConnection(socket) {
     socket.userData = { avatar: null, position: null, color: null };
 
     console.log('New player connected.', socket.id)
-
-
 
 
     socket.emit('updatePlayer', { id }); // send state 
@@ -118,6 +114,9 @@ function newConnection(socket) {
 
     function placeBlock(block) {
         state['blocks'][block.uuid] = block // add block to the state right? 
+
+        checkGrid(state, block)
+
         changes['add'].push(block) // add block to the state right? 
         socket.broadcast.emit("add", block);
     }
@@ -130,7 +129,13 @@ function newConnection(socket) {
 }
 
 
-function updateGrid(state, block) {
+function checkGrid({grid}, block) {
+
+	console.log('check grid!')
+	let { i, j, k } = block
+	grid[i][j][k] = true 
+
+
 
 }
 
