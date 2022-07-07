@@ -101,7 +101,7 @@ class Game {
         break;
 
       case "remove":
-        console.log("Got remove request from remote.");
+        // console.log("Got remove request from remote.");
         const blockIndex = game.objects.findIndex((o) => o.uuid === value.uuid);
         if (blockIndex > -1) {
           const block = game.objects[blockIndex];
@@ -110,7 +110,7 @@ class Game {
 
           const voxel = game.voxels[block.uuid];
           if (voxel) {
-            console.log("Found its voxel.");
+            // console.log("Found its voxel.");
             game.scene.remove(voxel);
             delete game.voxels[block.uuid];
           }
@@ -442,7 +442,7 @@ class Game {
 
         // create cube
       } else {
-        console.log("add voxel");
+        // console.log("add voxel");
 
         let position = new THREE.Vector3();
         position.copy(intersect.point).add(intersect.face.normal);
@@ -483,7 +483,7 @@ class Game {
   }
 
   handMovementCallback(position) {
-    console.log("Executing handMovementCallback!");
+    // console.log("Executing handMovementCallback!");
     //do things when hand moves
 
     position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
@@ -532,7 +532,7 @@ class Game {
 
         // create cube
       } else {
-        console.log("add voxel");
+        // console.log("add voxel");
 
         let position = new THREE.Vector3();
         position.copy(intersect.point).add(intersect.face.normal);
