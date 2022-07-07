@@ -207,6 +207,10 @@ class Game {
     );
     this.controls.target.set(0, 150, 0);
     this.controls.update();
+    this.controls.minPolarAngle = Math.PI / 6;
+    this.controls.maxPolarAngle = Math.PI / 2;
+    this.controls.minAzimuthAngle = 0;
+    this.controls.maxAzimuthAngle = Math.PI;
 
     window.addEventListener(
       "resize",
