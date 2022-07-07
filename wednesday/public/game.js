@@ -62,7 +62,7 @@ class Game {
        this.plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ visible: false }));
   
 
-        this.objects.push(this.plane)
+        this.objects.push(game.plane)
         // this.scene.add(game.plane);
 
         Object.values(blocks).forEach(o=> this.update('add', o))
@@ -83,7 +83,6 @@ class Game {
                 voxel.uuid = value.uuid
                 game.scene.add(voxel);
                 game.objects.push(voxel);
-                startOver()
                 break;
             case 'remove':
                 const objectIndex = game.objects.findIndex(o => o.uuid === value.uuid)
@@ -253,13 +252,16 @@ class Game {
             const intersect = intersects[0];
             // delete cube
             if (game.isShiftDown) {
+
                 if (intersect.object !== game.plane) {
+
+                	delete game.state[uiid] 
                     game.scene.remove(intersect.object);
                     game.objects.splice(game.objects.indexOf(intersect.object), 1);
                     game.player.socket.emit("remove", { uuid: intersect.object.uuid });
 
                 }
-                // create cube
+
             } else {
 
                 let position = new THREE.Vector3()
@@ -268,8 +270,18 @@ class Game {
                 let uuid = generateUUID()
                 let color = game.player.color
 
-                game.update("add", { position, color, uuid }) // update local 
-                game.player.socket.emit("add", { position, color, uuid }); // update global
+                let params = { position, color, uuid }
+
+                game.state['blocks'][uuid] = params  // need to update local state 
+                game.update("add", params) // update local 
+                game.player.socket.emit("add", params); // update global
+
+
+                wfcDone = false 
+                wfcModifiers.push(params) // event loop wfc 
+                
+
+
 
             }
         }

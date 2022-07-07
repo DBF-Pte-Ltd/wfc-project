@@ -56,7 +56,6 @@ function StarOver(DIM) {
         grid[i] = new Cell(5);
     }
 
-
     return { blockSize, DIM, /*grid,*/ blocks }
 
 }
@@ -66,24 +65,19 @@ let changes = {
 	remove:{}
 }
 
-const state = StarOver(20)
+let state = StarOver(20)
 
 function newConnection(socket){
+
+
+	state = StarOver(20)
 
 
 	let {id} = socket
 
 	socket.userData = { avatar:null, position: null, color: null};
-
-	console.log('New player connected.', socket.id)
-
-
-
-
     socket.emit('updatePlayer', { id }); // send state 
     socket.emit('restoreState', { state }); // send state 
-    
-	
     socket.on('disconnect', function(){
 		socket.broadcast.emit('player:left', { id: socket.id });
     });	
