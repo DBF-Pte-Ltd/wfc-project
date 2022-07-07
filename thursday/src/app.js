@@ -114,7 +114,6 @@ function newConnection(socket) {
     function placeBlock(block) {
         state['blocks'][block.uuid] = block // add block to the state right? 
         checkGrid(state, block)
-        changes['add'].push(block) // add block to the state right? 
         socket.broadcast.emit("add", block);
 
     }
