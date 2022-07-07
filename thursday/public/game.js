@@ -110,7 +110,7 @@ class Game {
                 let str2 = values[Math.floor(Math.random() * values.length)]
 
                 let path = 'assets/facades/' + str1 + '/' + str2 + '.jpg'
-                console.log(path)
+                // console.log(path)
 
                 o.material.map = new THREE.TextureLoader().load(path)
             }
@@ -250,7 +250,7 @@ class Game {
         });
         this.updateRemotePlayers(dt);
 
-        if (false) {
+        if (true) {
 
             if (handposeModel && videoDataLoaded) {
                 // model and video both loaded
@@ -270,8 +270,15 @@ class Game {
 
                     // tell the server about our updates!
                     game.player.hands = myHands;
-                    if (game.player.hands[0])
-                        game.player.hands[0].landmarks.forEach((l) => (l[2] += 200));
+                    if (game.player.hands[0]) {
+
+                      const pt1 = new THREE.Vector3(...game.player.hands[0].landmarks[0])
+                      const pt2 = new THREE.Vector3(...game.player.hands[0].landmarks[1])
+                      const dist = 50 + 10000/pt1.distanceTo(pt2)
+                      // console.log('Landmarks:: ', dist)
+
+                        game.player.hands[0].landmarks.forEach((l) => (l[2] += dist));
+                    }
                     game.player.updateSocket();
                 });
             }
@@ -350,7 +357,7 @@ class Game {
                 position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
                 let uuid = generateUUID()
                 let color = game.player.color
-
+                
                 let params = { position, color, uuid }
 
                 game.state['blocks'][uuid] = params // need to update local state 
@@ -359,7 +366,6 @@ class Game {
 
 
                 console.log('add modifier')
-
                 wfcModifiers.push(params) // event loop wfc 
                 wfcDone = false
 
@@ -382,37 +388,6 @@ class Game {
                 break;
         }
     }
-
-    onPointerMove(event) {
-
-        // deprecated 
-
-        // console.log('Running onPointerMove.')
-        //moved this functionality to hand
-        // game.pointer.set(
-        //   (event.clientX / window.innerWidth) * 2 - 1,
-        //   -(event.clientY / window.innerHeight) * 2 + 1
-        // );
-        // game.raycaster.setFromCamera(game.pointer, game.camera);
-        // const intersects = game.raycaster.intersectObjects(game.objects, false);
-        // if (intersects.length > 0) {
-        //   const intersect = intersects[0];
-        //   game.player.rollOverMesh.position
-        //     .copy(intersect.point)
-        //     .add(intersect.face.normal);
-        //   game.player.rollOverMesh.position
-        //     .divideScalar(50)
-        //     .floor()
-        //     .multiplyScalar(50)
-        //     .addScalar(25);
-        //   // console.log('Update socket:: ', game.player.updateSocket)
-        //   game.player.position = game.player.rollOverMesh.position;
-        //   game.player.updateSocket();
-        //   // game.player.socket.emit("update", { uuid: game.player.id, position: game.player.rollOverMesh.position, color: game.player.color });
-        // }
-    }
-
-
 
     handMovementCallback(position) {
         console.log('Executing handMovementCallback!')
@@ -453,6 +428,11 @@ class Game {
 
                 this.update("add", { position, color, uuid }); // update local
                 this.player.socket.emit("add", { position, color, uuid }); // update global
+
+
+                /* console.log('add modifier')
+                wfcModifiers.push(params) // event loop wfc 
+                wfcDone = false */
             }
         }
     }

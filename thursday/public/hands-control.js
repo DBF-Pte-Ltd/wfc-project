@@ -28,6 +28,7 @@ dbg.canvas.style.position = "absolute";
 dbg.canvas.style.left = "0px";
 dbg.canvas.style.top = "0px";
 dbg.canvas.style.zIndex = 100; // "bring to front"
+dbg.canvas.id = 'dbg-canvas'
 document.body.appendChild(dbg.canvas);
 
 const videoConstraints = {
