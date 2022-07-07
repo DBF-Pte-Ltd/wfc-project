@@ -70,7 +70,7 @@ class Game {
         // this.scene.add(game.plane);
 
         Object.values(blocks).forEach((o) => this.update("add", o));
-        // initP5js(this.scene);
+        initP5js(this.scene);
     }
 
     update(key, value) {
@@ -120,15 +120,19 @@ class Game {
 
         for (let i = 0; i < category.length; i++) {
 
+            let str1 = category[i]
+
+            object[str1] = {}
+
             for (let j = 0; j < values.length; j++) {
 
-                let str1 = category[i]
+
                 let str2 = values[j]
                 let path = 'assets/facades/' + str1 + '/' + str2 + '.jpg'
 
-                object[str1] = {str2:new THREE.TextureLoader().load(path)
-                  }
-           
+                object[str1][str2] = new THREE.TextureLoader().load(path)
+
+
             }
         }
 
@@ -141,13 +145,11 @@ class Game {
 
         this.objects.forEach(o => {
 
+                if (o.material.map) return
                 let category = ['commercial', 'industrial', 'institutional', 'office', 'parking', 'recreational', 'residential']
                 let values = ['1-20', '1-30', '1-50', '1-60', '1-80', '1-90']
                 let str1 = category[Math.floor(Math.random() * category.length)]
                 let str2 = values[Math.floor(Math.random() * values.length)]
-
-                console.log(this.textures)
-                console.log(str1,str2)
                 o.material.map = this.textures[str1][str2]
             }
 
@@ -277,11 +279,11 @@ class Game {
         const game = this;
         const dt = this.clock.getDelta();
 
-        /*        if (animatedMesh) {
+                if (animatedMesh) {
                     animatedMesh.material.map.dispose();
                     animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
                     animatedMesh.material.needsUpdate = true;
-                }*/
+                }
 
         const animationQueue = []
 
