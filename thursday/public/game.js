@@ -1,4 +1,4 @@
-let enableHandTracking = true
+let enableHandTracking = true 
 
 class Game {
     constructor() {
@@ -333,7 +333,10 @@ class Game {
                          const dist = 50 + 10000/pt1.distanceTo(pt2) */
                         // console.log('Landmarks:: ', dist)
 
-                        game.player.hands[0].landmarks.forEach((l) => (l[2] += AVERAGE(game.handElevations)));
+                        let avgHandPos = AVERAGE(game.handElevations)
+                        if(avgHandPos>1500) avgHandPos = 1500
+
+                        game.player.hands[0].landmarks.forEach((l) => (l[2] += avgHandPos));
                     }
                     game.player.updateSocket();
                 });
