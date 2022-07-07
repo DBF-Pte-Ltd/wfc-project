@@ -32,7 +32,7 @@ class Player {
         if(!this.local) {
             const players = this.game.initialisingPlayers.splice(this.game.initialisingPlayers.indexOf(this), 1);
             this.game.remotePlayers.push(players[0]);
-            console.log('Non local player:: ', players, this.game.remotePlayers)
+            // console.log('Non local player:: ', players, this.game.remotePlayers)
         }
 
     }
