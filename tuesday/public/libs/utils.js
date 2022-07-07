@@ -74,3 +74,12 @@ function extrude({ polygon, holes, depth, translation, scale, rotation, material
       return shape;
     }
   }
+
+  function SUM(list) {
+    return list.reduce((a, b) => a + b, 0);
+  }
+
+  function AVERAGE(list) {
+    const total = SUM(list)
+    return total/list.length
+  }
