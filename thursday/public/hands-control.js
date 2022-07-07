@@ -78,7 +78,7 @@ function updateMeshesFromServerData(remoteData, game) {
     if (!handMeshes[data.id] && data.hands.length) {
       handMeshes[data.id] = new THREE.Object3D();
 
-      console.log(data.hands);
+      // console.log(data.hands);
 
       for (var i = 0; i < 21; i++) {
         // 21 keypoints
@@ -89,9 +89,9 @@ function updateMeshesFromServerData(remoteData, game) {
         // we make each bone a cylindrical shape, but you can use your own models here too
         var geometry = new THREE.CylinderGeometry(isPalm ? 5 : 10, 5, 1);
 
-        var material = new THREE.MeshNormalMaterial();
+        // var material = new THREE.MeshNormalMaterial();
         // another possible material (after adding a light source):
-        // var material = new THREE.MeshPhongMaterial({color:0x00ffff});
+        var material = new THREE.MeshStandardMaterial({color:data.color, emissive: data.color, emissiveIntensity:0.4});
 
         var mesh = new THREE.Mesh(geometry, material);
         mesh.rotation.x = Math.PI / 2;

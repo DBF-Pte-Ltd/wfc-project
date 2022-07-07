@@ -25,7 +25,7 @@ class Player {
         const rollOverMaterial = new THREE.MeshBasicMaterial({ color: this.color, opacity: 0.5, transparent: true });
         this.rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
         this.rollOverMesh.position.set(this.position)
-        this.game.scene.add(this.rollOverMesh);
+        // this.game.scene.add(this.rollOverMesh);
 
         this.cubeGeo = new THREE.BoxGeometry(50, 50, 50);
         this.cubeMaterial = new THREE.MeshLambertMaterial({ color: this.color, map: new THREE.TextureLoader().load('assets/images/abstract.jpg') });

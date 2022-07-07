@@ -38,10 +38,6 @@ class Game {
 
     this.state = state;
 
-    // grid
-    const gridHelper = new THREE.GridHelper(DIM * 50, DIM);
-    this.scene.add(gridHelper);
-
     //raycaster and pointer
     this.raycaster = new THREE.Raycaster();
     this.down = new THREE.Vector3(0, -1, 0);
@@ -50,16 +46,39 @@ class Game {
     //shift press handler
     this.isShiftDown = false;
 
-    const geometry = new THREE.PlaneGeometry(DIM * 50, DIM * 50);
+    // const geometry = new THREE.PlaneGeometry(DIM * 50, DIM * 50);
+    // geometry.rotateX(-Math.PI / 2);
+
+    const geometry = new THREE.BoxGeometry(DIM * 50, DIM * 50, DIM*50);
     geometry.rotateX(-Math.PI / 2);
 
     this.plane = new THREE.Mesh(
       geometry,
-      new THREE.MeshBasicMaterial({ visible: false })
+      // new THREE.MeshBasicMaterial({ visible: false })
+      new THREE.MeshNormalMaterial({wireframe: false})
     );
 
     this.objects.push(this.plane);
-    // this.scene.add(game.plane);
+    this.scene.add(game.plane);
+
+    // grids
+    const gridHelperYup = new THREE.GridHelper(DIM * 50, DIM);
+    gridHelperYup.translateY(DIM * 25)
+    const gridHelperYdown = new THREE.GridHelper(DIM * 50, DIM);
+    gridHelperYdown.rotateX(Math.PI).translateY(DIM * 25)
+
+    const gridHelperXup = new THREE.GridHelper(DIM * 50, DIM);
+    gridHelperXup.rotateZ(Math.PI/2).translateY(DIM * 25)
+    const gridHelperXdown = new THREE.GridHelper(DIM * 50, DIM);
+    gridHelperXdown.rotateZ(Math.PI/2).rotateY(Math.PI).translateY(-DIM * 25)
+
+    const gridHelperZup = new THREE.GridHelper(DIM * 50, DIM);
+    gridHelperZup.rotateX(Math.PI/2).translateY(DIM * 25)
+    const gridHelperZdown = new THREE.GridHelper(DIM * 50, DIM);
+    gridHelperZdown.rotateX(Math.PI/2).rotateY(Math.PI).translateY(-DIM * 25)
+
+
+    this.plane.add(gridHelperYup, gridHelperYdown, gridHelperXup, gridHelperXdown, gridHelperZup, gridHelperZdown);
 
     Object.values(blocks).forEach((o) => this.update("add", o));
 
@@ -76,9 +95,10 @@ class Game {
         const voxel = new THREE.Mesh(game.player.cubeGeo, remoteCubeMat);
         voxel.position.copy(value.position);
         voxel.uuid = value.uuid;
-        game.scene.add(voxel);
+        // game.scene.add(voxel);
+        game.plane.add(voxel)
         game.objects.push(voxel);
-        startOver();
+        // startOver();
         break;
       case "remove":
         const objectIndex = game.objects.findIndex(
@@ -106,7 +126,7 @@ class Game {
       10,
       20000
     );
-    this.camera.position.set(500, 400, -500);
+    this.camera.position.set(5000 * 0.8, 4000 * 0.8, -5000 * 0.8);
     this.scene = new THREE.Scene();
 
     let ambient = new THREE.AmbientLight(0xa0a0a0);
@@ -217,6 +237,12 @@ class Game {
     const game = this;
     const dt = this.clock.getDelta();
 
+    if(game.plane) {
+      game.plane.rotation.x += 0.01;
+      game.plane.rotation.y += 0.01;
+      game.plane.rotation.z += 0.01;
+    }
+
     if (animatedMesh) {
       animatedMesh.material.map.dispose();
       animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
@@ -228,103 +254,58 @@ class Game {
     });
     this.updateRemotePlayers(dt);
 
-    if (handposeModel && videoDataLoaded) {
-      // model and video both loaded
-      handposeModel.estimateHands(capture).then(function (_hands) {
-        // we're handling an async promise
-        // best to avoid drawing something here! it might produce weird results due to racing
-        myHands = _hands; // update the global myHands object with the detected hands
-        if (!myHands.length) {
-          // haven't found any hands
-          statusText = "Show some hands!";
-        } else {
-          // display the confidence, to 3 decimal places
-          statusText =
-            "Confidence: " +
-            Math.round(myHands[0].handInViewConfidence * 1000) / 1000;
-        }
+    //condition to execute hands update
+    if(true) {
 
-        // tell the server about our updates!
-        game.player.hands = myHands;
-        // console.log('Player hand:: ', game.player.hands)
-        if (game.player.hands[0])
-          game.player.hands[0].landmarks.forEach((l) => (l[2] += 200));
-        game.player.updateSocket();
-      });
+      if (handposeModel && videoDataLoaded) {
+        // model and video both loaded
+        handposeModel.estimateHands(capture).then(function (_hands) {
+          // we're handling an async promise
+          // best to avoid drawing something here! it might produce weird results due to racing
+          myHands = _hands; // update the global myHands object with the detected hands
+          if (!myHands.length) {
+            // haven't found any hands
+            statusText = "Show some hands!";
+          } else {
+            // display the confidence, to 3 decimal places
+            statusText =
+              "Confidence: " +
+              Math.round(myHands[0].handInViewConfidence * 1000) / 1000;
+          }
+  
+          // tell the server about our updates!
+          game.player.hands = myHands;
+          // console.log('Player hand:: ', game.player.hands)
+          if (game.player.hands[0])
+            game.player.hands[0].landmarks.forEach((l) => (l[2] += 600));
+          game.player.updateSocket();
+        });
+      }
+  
+      //draw on 2D canvas for hands
+      dbg.clearRect(0, 0, dbg.canvas.width, dbg.canvas.height);
+      dbg.save();
+      dbg.fillStyle = "red";
+      dbg.strokeStyle = "red";
+      //   dbg.drawImage(capture,0,0);
+      drawHands(myHands);
+      dbg.restore();
+      dbg.save();
+      dbg.fillStyle = "red";
+      //   dbg.fillText(statusText,2,60);
+      dbg.restore(); 
     }
-
-    //draw on 2D canvas for hands
-    dbg.clearRect(0, 0, dbg.canvas.width, dbg.canvas.height);
-    dbg.save();
-    dbg.fillStyle = "red";
-    dbg.strokeStyle = "red";
-    //   dbg.drawImage(capture,0,0);
-    drawHands(myHands);
-    dbg.restore();
-    dbg.save();
-    dbg.fillStyle = "red";
-    //   dbg.fillText(statusText,2,60);
-    dbg.restore();
+    
+    
+  
 
     this.renderer.render(this.scene, this.camera);
   }
 
   onPointerMove(event) {
-    // console.log('Running onPointerMove.')
-    //moved this functionality to hand
-    /* game.pointer.set(
-      (event.clientX / window.innerWidth) * 2 - 1,
-      -(event.clientY / window.innerHeight) * 2 + 1
-    );
-    game.raycaster.setFromCamera(game.pointer, game.camera);
-    const intersects = game.raycaster.intersectObjects(game.objects, false);
-    if (intersects.length > 0) {
-      const intersect = intersects[0];
-      game.player.rollOverMesh.position
-        .copy(intersect.point)
-        .add(intersect.face.normal);
-      game.player.rollOverMesh.position
-        .divideScalar(50)
-        .floor()
-        .multiplyScalar(50)
-        .addScalar(25);
-      // console.log('Update socket:: ', game.player.updateSocket)
-      game.player.position = game.player.rollOverMesh.position;
-      game.player.updateSocket();
-      // game.player.socket.emit("update", { uuid: game.player.id, position: game.player.rollOverMesh.position, color: game.player.color });
-    } */
   }
 
   onPointerDown(event) {
-    //this functionality is tied to hand now
-    /* game.pointer.set(
-      (event.clientX / window.innerWidth) * 2 - 1,
-      -(event.clientY / window.innerHeight) * 2 + 1
-    );
-    game.raycaster.setFromCamera(game.pointer, game.camera);
-    const intersects = game.raycaster.intersectObjects(game.objects, false);
-
-    if (intersects.length > 0) {
-      const intersect = intersects[0];
-      // delete cube
-      if (game.isShiftDown) {
-        if (intersect.object !== game.plane) {
-          game.scene.remove(intersect.object);
-          game.objects.splice(game.objects.indexOf(intersect.object), 1);
-          game.player.socket.emit("remove", { uuid: intersect.object.uuid });
-        }
-        // create cube
-      } else {
-        let position = new THREE.Vector3();
-        position.copy(intersect.point).add(intersect.face.normal);
-        position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-        let uuid = generateUUID();
-        let color = game.player.color;
-
-        game.update("add", { position, color, uuid }); // update local
-        game.player.socket.emit("add", { position, color, uuid }); // update global
-      }
-    } */
   }
 
   onDocumentKeyDown(event) {
@@ -347,9 +328,9 @@ class Game {
     console.log('Executing handMovementCallback!')
     //do things when hand moves
 
-    position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+    // position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
     // console.log('position:: ', position)
-    this.player.rollOverMesh.position.copy(position);
+    // this.player.rollOverMesh.position.copy(position);
 
     /* for (const object of game.objects) {
       if (position.equals(object.position)) {
@@ -376,7 +357,19 @@ class Game {
       } else {
         let position = new THREE.Vector3();
         position.copy(intersect.point).add(intersect.face.normal);
-        position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+
+        let normal = intersect.face.normal.clone()
+        const matrix = this.plane.matrix.clone().invert()
+
+        position.applyMatrix4(matrix)
+        normal.applyMatrix4(matrix)
+
+        position.add(normal);
+        // console.log("Normal is:: ", normal.x, normal.y, normal.z)
+        if(normal.y !== -1) position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+        else position.divideScalar(50).floor().multiplyScalar(50).subScalar(25);
+        // console.log('Add position:: ', position)
+
         let uuid = generateUUID();
         let color = this.player.color;
 
