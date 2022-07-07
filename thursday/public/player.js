@@ -129,6 +129,7 @@ class PlayerLocal extends Player {
 			avatar:this.avatar, 
 			color: this.color,
 			position: this.position,
+            hands: this.hands
 		});
     }
 }
