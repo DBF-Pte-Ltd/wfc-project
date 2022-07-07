@@ -110,7 +110,7 @@ function initP5Canvas(name) {
             let cnv = p.createCanvas(512, 512)
             cnv.id(name);
             p.oCanvas = document.getElementById(name)
-            p.background(0)
+            p.background('purple')
 
             // p.drawRandom()
             // Create and label the tiles
@@ -119,7 +119,7 @@ function initP5Canvas(name) {
             tiles[1] = new Tile(tileImages[2], ["BBB", "BCB", "BBB", "BBB"]); // b,c 
             tiles[2] = new Tile(tileImages[3], ["BBB", "BDB", "BBB", "BDB"]); // b,d 
             tiles[3] = new Tile(tileImages[4], ["ABB", "BCB", "BBA", "AAA"]); // a,b,c
-            tiles[4] = new Tile(tileImages[5], ["ABB", "BBB", "BBB", "BBA"]); 
+            tiles[4] = new Tile(tileImages[5], ["ABB", "BBB", "BBB", "BBA"]);
             tiles[5] = new Tile(tileImages[6], ["BBB", "BCB", "BBB", "BCB"]);
             tiles[6] = new Tile(tileImages[7], ["BDB", "BCB", "BDB", "BCB"]);
             tiles[7] = new Tile(tileImages[8], ["BDB", "BBB", "BCB", "BBB"]);
@@ -127,6 +127,12 @@ function initP5Canvas(name) {
             tiles[9] = new Tile(tileImages[10], ["BCB", "BCB", "BCB", "BCB"]);
             tiles[10] = new Tile(tileImages[11], ["BCB", "BCB", "BBB", "BBB"]);
             tiles[11] = new Tile(tileImages[12], ["BBB", "BCB", "BBB", "BCB"]);
+
+            for (let i = 2; i < 11; i++) {
+                for (let j = 1; j < 4; j++) {
+                    tiles.push(tiles[i].rotate(j,this));
+                }
+            }
 
             // Generate the adjacency rules based on edges
             for (let i = 0; i < tiles.length; i++) {
@@ -142,6 +148,9 @@ function initP5Canvas(name) {
         }
 
         p.draw = function() {
+
+
+
 
             let DIM = 20
 
@@ -192,11 +201,8 @@ function wfcModify(state, grid, o) {
 
 
     console.log('modify')
-    clearSquare(state, o, 2, grid)
+    clearSquare(state, o, 3, grid)
     placeBlockCells(game.state, Object.values(game.state.blocks))
-
- 
-
 
 }
 
@@ -286,7 +292,7 @@ function placeBlockCells(state, arr) {
 
         let { i, j, k } = getCoordinates(state, o)
         grid[i + k * DIM].collapsed = true;
-        grid[i + k * DIM].options = [0,1,4]
+        grid[i + k * DIM].options = [0, 1, 4]
 
 
     })
@@ -312,7 +318,7 @@ function drawTiles(p5, DIM) {
         for (let i = 0; i < DIM; i++) {
 
 
-            let row = i 
+            let row = i
             let col = j
 
             if (row < 0) continue
@@ -332,7 +338,7 @@ function drawTiles(p5, DIM) {
 
             } else {
 
-                p5.fill(0);
+                p5.fill('purple');
                 p5.stroke(100);
                 p5.rect(i * w, j * h, w, h);
 
@@ -392,7 +398,7 @@ function wfc({ grid, gridCopy, p, DIM }) {
 
     if (cell.options[0] === undefined) {
 
-        return 
+        return
 
 
     }
