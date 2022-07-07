@@ -18,7 +18,7 @@ class Game {
 
         this.objects = [];
 
-        this.handElevation = 200
+        this.handElevations = [200, 200, 200, 200, 200]
 
         this.container = document.createElement("div");
         this.container.style.height = "100%";
@@ -333,7 +333,7 @@ class Game {
                          const dist = 50 + 10000/pt1.distanceTo(pt2) */
                         // console.log('Landmarks:: ', dist)
 
-                        game.player.hands[0].landmarks.forEach((l) => (l[2] += game.handElevation));
+                        game.player.hands[0].landmarks.forEach((l) => (l[2] += AVERAGE(game.handElevations)));
                     }
                     game.player.updateSocket();
                 });
@@ -454,12 +454,14 @@ class Game {
 
         this.raycaster.set(position, this.up);
         const intersectsAbove = this.raycaster.intersectObjects(this.objects, false);
-        if (intersectsAbove.length) {
-            const upmost = intersectsAbove.pop()
-            game.handElevation = upmost.point.y + 50
-        } else {
-            game.handElevation = 200
+        if(intersectsAbove.length) {
+          const upmost = intersectsAbove.pop()
+          game.handElevations.push(upmost.point.y + 50)
         }
+        else {
+          game.handElevations.push(200)
+        }
+        game.handElevations.shift()
 
 
         this.raycaster.set(position, this.down);

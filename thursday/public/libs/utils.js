@@ -109,3 +109,12 @@ function generateUUID() {
     return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
+
+function SUM(list) {
+  return list.reduce((a, b) => a + b, 0);
+}
+
+function AVERAGE(list) {
+  const total = SUM(list)
+  return total/list.length
+}
