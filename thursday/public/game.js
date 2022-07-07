@@ -414,6 +414,14 @@ class Game {
                 let position = new THREE.Vector3()
                 position.copy(intersect.point).add(intersect.face.normal);
                 position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+
+                for(const object of game.objects) {
+                  if(position.equals(object.position)) {
+                    console.log('Already exists!')
+                    return;
+                  }
+                }
+
                 let uuid = generateUUID()
                 let color = game.player.color
 
