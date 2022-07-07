@@ -191,8 +191,7 @@ function initP5Canvas(name) {
 function wfcModify(state, grid, o) {
 
 
-
-
+    console.log('modify')
     clearSquare(state, o, 2, grid)
     placeBlockCells(game.state, Object.values(game.state.blocks))
 
@@ -283,7 +282,7 @@ function placeBlockCells(state, arr) {
 
     arr.forEach(o => {
 
-        console.log(o)
+        // console.log(o)
 
         let { i, j, k } = getCoordinates(state, o)
         grid[i + k * DIM].collapsed = true;
