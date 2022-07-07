@@ -44,7 +44,7 @@ class Cell {
 
 
 
-function StarOver(DIM) {
+function StartOver(DIM) {
 
 
 	let blockSize = 50 
@@ -66,10 +66,11 @@ let changes = {
 	remove:{}
 }
 
-const state = StarOver(20)
+let state = StartOver(20)
 
 function newConnection(socket){
 
+	state = StartOver(20)
 
 	let {id} = socket
 

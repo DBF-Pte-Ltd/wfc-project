@@ -63,7 +63,7 @@ class Game {
 
     Object.values(blocks).forEach((o) => this.update("add", o));
 
-    initP5js(this.scene);
+    // initP5js(this.scene);
   }
 
   update(key, value) {
@@ -271,8 +271,8 @@ class Game {
 
   onPointerMove(event) {
     // console.log('Running onPointerMove.')
-
-    game.pointer.set(
+    //moved this functionality to hand
+    /* game.pointer.set(
       (event.clientX / window.innerWidth) * 2 - 1,
       -(event.clientY / window.innerHeight) * 2 + 1
     );
@@ -292,11 +292,12 @@ class Game {
       game.player.position = game.player.rollOverMesh.position;
       game.player.updateSocket();
       // game.player.socket.emit("update", { uuid: game.player.id, position: game.player.rollOverMesh.position, color: game.player.color });
-    }
+    } */
   }
 
   onPointerDown(event) {
-    game.pointer.set(
+    //this functionality is tied to hand now
+    /* game.pointer.set(
       (event.clientX / window.innerWidth) * 2 - 1,
       -(event.clientY / window.innerHeight) * 2 + 1
     );
@@ -323,7 +324,7 @@ class Game {
         game.update("add", { position, color, uuid }); // update local
         game.player.socket.emit("add", { position, color, uuid }); // update global
       }
-    }
+    } */
   }
 
   onDocumentKeyDown(event) {
