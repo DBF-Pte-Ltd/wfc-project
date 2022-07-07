@@ -70,6 +70,7 @@ capture.onloadeddata = function () {
 // threejs has a "scene" model, so we don't have to specify what to draw each frame,
 // instead we put objects at right positions and threejs renders them all
 function updateMeshesFromServerData(remoteData, game) {
+  // console.log('updateMeshesFromServerData:: ', remoteData, game)
   // first, we add the newly appeared hands from the server
   for (const data of remoteData) {
     // console.log('Remote data hands:: ', data.hands)

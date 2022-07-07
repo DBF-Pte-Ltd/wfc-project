@@ -246,6 +246,7 @@ class Game {
 
         // tell the server about our updates!
         game.player.hands = myHands;
+        // console.log('Player hand:: ', game.player.hands)
         if (game.player.hands[0])
           game.player.hands[0].landmarks.forEach((l) => (l[2] += 200));
         game.player.updateSocket();
@@ -342,6 +343,7 @@ class Game {
   }
 
   handMovementCallback(position) {
+    console.log('Executing handMovementCallback!')
     //do things when hand moves
 
     position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);

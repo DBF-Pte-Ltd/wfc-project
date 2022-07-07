@@ -138,6 +138,7 @@ setInterval(function(){
 				avatar: socket.userData.avatar,
 				color: socket.userData.color,
 				position: socket.userData.position,
+				hands: socket.userData.hands,
 			});  
 
 
