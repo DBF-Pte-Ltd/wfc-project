@@ -1,5 +1,3 @@
-
-
 // Array for tiles and tile images
 const tiles = [];
 const tileImages = [];
@@ -55,8 +53,7 @@ function setup() {
 }
 
 function startOver() {
-
-  console.log(game.state)
+  console.log(game.state);
   // Create cell for each spot on the grid
   for (let i = 0; i < DIM * DIM; i++) {
     grid[i] = new Cell(tiles.length);
@@ -77,10 +74,9 @@ function checkValid(arr, valid) {
   }
 }
 
-
 function draw() {
   background(0);
-  
+
   // Draw the grid
   const w = width / DIM;
   const h = height / DIM;
@@ -97,20 +93,19 @@ function draw() {
       }
     }
   }
-  
 
   // Make a copy of grid
   let gridCopy = grid.slice();
   // Remove any collapsed cells
   gridCopy = gridCopy.filter((a) => !a.collapsed);
-  
+
   // The algorithm has completed if everything is collapsed
   if (grid.length == 0) {
     return;
   }
-  
+
   // Pick a cell with least entropy
-  
+
   // Sort by entropy
   gridCopy.sort((a, b) => {
     return a.options.length - b.options.length;
@@ -126,8 +121,7 @@ function draw() {
     }
   }
   if (stopIndex > 0) gridCopy.splice(stopIndex);
-  
-  
+
   // Collapse a cell
   const cell = random(gridCopy);
   cell.collapsed = true;
@@ -137,7 +131,7 @@ function draw() {
     return;
   }
   cell.options = [pick];
-  
+
   // Calculate entropy
   const nextGrid = [];
   for (let j = 0; j < DIM; j++) {
