@@ -28,6 +28,8 @@ class Game {
 
         this.clock = new THREE.Clock();
 
+        this.animationQueue = []
+
         this.init();
 
         window.onError = function(error) {
@@ -80,6 +82,7 @@ class Game {
                 voxel.uuid = value.uuid;
                 game.scene.add(voxel);
                 game.objects.push(voxel);
+                game.animationQueue.push({object: voxel, duration: 24})
 
                 this.updateTextures()
                 break;
@@ -248,6 +251,22 @@ class Game {
             animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
             animatedMesh.material.needsUpdate = true;
         }
+
+        const animationQueue = []
+
+        game.animationQueue.forEach(anim => {
+          anim.object.scale.x = Math.sin(Math.PI*(90/(12-anim.duration))/180) + 1
+          anim.object.scale.z = Math.sin(Math.PI*(90/(12-anim.duration))/180) + 1
+          anim.duration--
+
+          if(anim.duration) animationQueue.push(anim)
+          else {
+            anim.object.scale.x = 1
+            anim.object.scale.z = 1
+          }
+        })
+
+        game.animationQueue = animationQueue
 
         requestAnimationFrame(function() {
             game.animate();
@@ -434,10 +453,9 @@ class Game {
                 this.update("add", { position, color, uuid }); // update local
                 this.player.socket.emit("add", { position, color, uuid }); // update global
 
-
-                /* console.log('add modifier')
+                console.log('add modifier')
                 wfcModifiers.push(params) // event loop wfc 
-                wfcDone = false */
+                wfcDone = false
             }
         }
     }
