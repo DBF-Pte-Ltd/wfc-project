@@ -452,6 +452,8 @@ class Game {
                 this.update("add", { position, color, uuid }); // update local
                 this.player.socket.emit("add", { position, color, uuid }); // update global
 
+                let params = { position, color, uuid }
+
                 console.log('add modifier')
                 wfcModifiers.push(params) // event loop wfc 
                 wfcDone = false
