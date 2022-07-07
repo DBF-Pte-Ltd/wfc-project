@@ -31,37 +31,45 @@ dbg.canvas.style.zIndex = 100; // "bring to front"
 dbg.canvas.id = 'dbg-canvas'
 document.body.appendChild(dbg.canvas);
 
+if(enableHandTracking) {
+
+}
+
 const videoConstraints = {
   width: { min: 420, ideal: 480, max: 1080 },
   height: { min: 420, ideal: 480, max: 1080 },
 };
 
 // read video from webcam
-var capture = document.createElement("video");
-capture.playsinline = "playsinline";
-capture.autoplay = "autoplay";
-navigator.mediaDevices
-  .getUserMedia({ audio: false, video: videoConstraints })
-  .then(function (stream) {
-    window.stream = stream;
-    capture.srcObject = stream;
-  });
 
-// hide the video element
-capture.style.position = "absolute";
-capture.style.opacity = 0;
-capture.style.zIndex = -100; // "send to back"
-
-// signal when capture is ready and set size for debug canvas
-capture.onloadeddata = function () {
-  console.log("video initialized");
-  videoDataLoaded = true;
-  dbg.canvas.width = capture.videoWidth; // half size
-  dbg.canvas.height = capture.videoHeight;
-  dbg.canvas.style.transform = "scale(-1, 1)";
-
-  game.camera.position.z = capture.videoWidth / 2; // rough estimate for suitable camera distance based on FOV
-};
+if(enableHandTracking) {
+  
+  var capture = document.createElement("video");
+  capture.playsinline = "playsinline";
+  capture.autoplay = "autoplay";
+  navigator.mediaDevices
+    .getUserMedia({ audio: false, video: videoConstraints })
+    .then(function (stream) {
+      window.stream = stream;
+      capture.srcObject = stream;
+    });
+  
+  // hide the video element
+  capture.style.position = "absolute";
+  capture.style.opacity = 0;
+  capture.style.zIndex = -100; // "send to back"
+  
+  // signal when capture is ready and set size for debug canvas
+  capture.onloadeddata = function () {
+    console.log("video initialized");
+    videoDataLoaded = true;
+    dbg.canvas.width = capture.videoWidth; // half size
+    dbg.canvas.height = capture.videoHeight;
+    dbg.canvas.style.transform = "scale(-1, 1)";
+  
+    game.camera.position.z = capture.videoWidth / 2; // rough estimate for suitable camera distance based on FOV
+  };
+}
 
 // certian materials require a light source, which you can add here:
 // var directionalLight = new THREE.DirectionalLight( 0xffffff, 1.0 );
