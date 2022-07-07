@@ -18,6 +18,8 @@ class Game {
 
         this.objects = [];
 
+        this.voxels = {}
+
         this.handElevations = [200, 200, 200, 200, 200]
 
         this.container = document.createElement("div");
@@ -85,10 +87,12 @@ class Game {
                 voxel.uuid = value.uuid;
                 game.scene.add(voxel);
                 game.objects.push(voxel);
+                // game.voxels[ voxel.uuid ] = voxel 
                 game.animationQueue.push({ object: voxel, duration: 24 })
 
                 this.updateTextures()
                 break;
+
             case "remove":
                 const objectIndex = game.objects.findIndex(
                     (o) => o.uuid === value.uuid
@@ -193,7 +197,7 @@ class Game {
 
         this.controls = new THREE.OrbitControls(
             this.camera,
-            this.renderer.domElement
+            this.renderer.domElementgeo
         );
         this.controls.target.set(0, 150, 0);
         this.controls.update();
@@ -220,20 +224,37 @@ class Game {
     }
 
     updateRemotePlayers() {
-        if (
-            this.remoteData === undefined ||
-            this.remoteData.length == 0 ||
-            this.player === undefined ||
-            this.player.id === undefined
-        )
-            return;
+
+
+        if (this.remoteData === undefined || this.remoteData.length == 0 || this.player === undefined || this.player.id === undefined) return;
 
         const newPlayers = [];
         const game = this;
         //Get all remotePlayers from remoteData array
         const remotePlayers = [];
 
-        this.remoteData.forEach(function(data) {
+
+        let {pack, changes} = this.remoteData
+
+
+        changes.forEach(changed =>{
+
+
+            console.log('changed object!')
+
+            let {shape} = changed 
+            const index = game.objects.findIndex((o) => o.uuid === changed.uuid);
+            game.objects[index].geometry = new THREE.CylinderGeometry(25,50,50)
+            // game.player.cubeGeo
+        
+        })
+
+
+
+
+
+
+        pack.forEach(function(data) {
             if (game.player.id != data.id) {
                 //Is this player being initialised?
                 let iplayer;
@@ -272,7 +293,7 @@ class Game {
             player.update();
         });
         //update hand meshes based on remote data - function in hands-controls.js
-        updateMeshesFromServerData(this.remoteData, this);
+        updateMeshesFromServerData(pack, this);
     }
 
     animate() {
@@ -410,6 +431,7 @@ class Game {
 
 
                 console.log('add voxel')
+
 
                 let position = new THREE.Vector3()
                 position.copy(intersect.point).add(intersect.face.normal);
