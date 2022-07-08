@@ -1,5 +1,8 @@
-let enableHandTracking = false;
+let enableHandTracking = true;
 let runWFC = false;
+
+var stats = Stats()
+document.body.appendChild(stats.dom)
 
 const voxelMat = new THREE.MeshBasicMaterial({
     visible: false,
@@ -363,6 +366,8 @@ class Game {
         const game = this;
         const dt = this.clock.getDelta();
 
+        stats.update()
+
         // this.randomDecay(0.05);
 
         if (animatedMesh) {
@@ -585,8 +590,16 @@ class Game {
         position.copy(intersect.point).add(intersect.face.normal);
         position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
 
-        for (const object of game.objects) {
-            if (position.equals(object.position)) {
+        let i = (position.x + (game.state.DIM * 50) / 2) / 50 - 0.5;
+        let j = (position.y + (game.state.DIM * 50) / 2) / 50 - 0.5;
+        let k = (position.z + (game.state.DIM * 50) / 2) / 50 - 0.5;
+
+        if(!checkDomain(i, j, k, game.state.DIM)) return;
+
+        const voxels = Object.values(game.voxels)
+
+        for(const v of voxels) {
+            if(position.equals(v.position)) {
                 console.log('Already exists!')
                 return;
             }
