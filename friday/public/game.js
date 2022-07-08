@@ -1,4 +1,4 @@
-let enableHandTracking = true;
+let enableHandTracking = false;
 let runWFC = false;
 
 var stats = Stats()
@@ -80,7 +80,11 @@ class Game {
         // this.scene.add(game.plane);
 
         Object.values(blocks).forEach((o) => this.update("add", o));
-        if (runWFC) initP5js(this.scene);
+        
+
+        initP5js(this.scene);
+    
+
     }
 
     update(key, value) {
@@ -176,6 +180,22 @@ class Game {
 
         // this.updateTextures()
         
+    }
+
+    updateTileset(data){
+
+      console.log('game - update tileset')
+
+
+      // // initP5js(this.scene);
+
+      // displayP5(data)
+
+      // console.log(animatedMesh)
+      // // animatedMesh.material.map.dispose();
+      // animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
+      // animatedMesh.material.needsUpdate = true;
+ 
     }
 
     updateTextures() {
@@ -370,11 +390,6 @@ class Game {
 
         // this.randomDecay(0.05);
 
-        if (animatedMesh) {
-            animatedMesh.material.map.dispose();
-            animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
-            animatedMesh.material.needsUpdate = true;
-        }
 
         game.playAnimationsInQueue();
 
@@ -614,10 +629,13 @@ class Game {
         game.update("add", params); // update local
         game.player.socket.emit("add", params); // update global
 
+        /*
         if (runWFC) {
             console.log("add modifier");
             wfcModifiers.push(params); // event loop wfc
             wfcDone = false;
         }
+        */
+
     }
 }
