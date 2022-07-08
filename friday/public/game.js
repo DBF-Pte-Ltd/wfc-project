@@ -161,6 +161,8 @@ class Game {
 
     updateMap(a, b, o) {
 
+        if(!o) return;
+
  /*       object.category = category
         object.variation = variation
 
@@ -301,6 +303,8 @@ class Game {
 
             const index = game.objects.findIndex((o) => o.uuid === changed.uuid);
             let block = game.objects[index]
+
+            if(!block) {return;}
 
             if (changed.hasOwnProperty('shape')) {
 
