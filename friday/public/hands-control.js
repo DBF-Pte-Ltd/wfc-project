@@ -22,6 +22,8 @@ let handMeshes = {}; // these are threejs objects that makes up the rendering of
 
 let handCollection = new THREE.Object3D();
 
+const cameraOffset = new Vector3(0, 1000.0, 1000.0); // NOTE Constant offset between the camera and the target
+
 let handsImage = new Image();
 handsImage.src = "assets/images/hands.png";
 
@@ -91,7 +93,7 @@ function updateMeshesFromServerData(remoteData, game) {
     if (!handMeshes[data.id] && data.hands.length) {
       handMeshes[data.id] = new THREE.Object3D();
 
-      console.log(data.hands);
+      if(data.id === game.player.id) handMeshes[data.id].localPlayer = true
 
       for (var i = 0; i < 21; i++) {
         // 21 keypoints
@@ -177,13 +179,19 @@ function updateMeshesFromServerData(remoteData, game) {
 
     handCollection.rotation.x = Math.PI / 2;
     handCollection.rotation.z = Math.PI;
-    averageHandPosition.multiplyScalar(1 / 21);
-    averageHandPosition.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-    averageHandPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
-    handCollection.position.set(averageHandPosition.x*1.25, 0, averageHandPosition.z*1.25)
-    averageHandPosition.x *=2.25
-    averageHandPosition.z *=2.25
-    game.handMovementCallback(averageHandPosition);
+    if(id === game.player.id) {
+
+      averageHandPosition.multiplyScalar(1 / 21);
+      averageHandPosition.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+      averageHandPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+      handCollection.position.set(averageHandPosition.x*1.25, 0, averageHandPosition.z*1.25)
+      averageHandPosition.x *=2.25
+      averageHandPosition.z *=2.25
+      game.handMovementCallback(averageHandPosition);
+
+      game.camera.position.copy(averageHandPosition).add(cameraOffset)
+      game.camera.lookAt(averageHandPosition)
+    }
   }
 }
 
