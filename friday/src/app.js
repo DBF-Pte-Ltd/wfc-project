@@ -111,7 +111,13 @@ function newConnection(socket) {
 
     function removeBlock(block) {
         delete state["blocks"][block.uuid];
+
         socket.broadcast.emit("remove", block);
+
+        let { grid, DIM } = state;
+        let { i, j, k } = getCoordinates(state, block);
+        if (!checkDomain(i, j, k, DIM)) return;
+        grid[i][j][k] = false
     }
 }
 
@@ -215,10 +221,12 @@ function updateShape(state, block) {
 
     let { grid, DIM } = state;
     let { i, j, k } = getCoordinates(state, block);
-
-
     if (!checkDomain(i, j, k, DIM)) return;
-    grid[i][j][k] = block.uuid;
+    grid[i][j][k] = block.uuid; // 
+
+    // grid[i][j][k] = false  
+
+
     let neighbours = check2DNeighbours(state, i, j, k)
 
     if (!neighbours) {
@@ -246,7 +254,9 @@ function updateShape(state, block) {
 
         neighbours.forEach(uuid => {
 
+
             let supportBlock = state["blocks"][uuid]
+            if (supportBlock === undefined) return
             supportBlock.shape = "cube";
             changes.push(supportBlock);
 
