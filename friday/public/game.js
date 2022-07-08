@@ -6,6 +6,7 @@ const voxelMat = new THREE.MeshBasicMaterial({
 });
 
 class Game {
+  
   constructor() {
     if (!Detector.webgl) Detector.addGetWebGLMessage();
 
@@ -242,20 +243,32 @@ class Game {
     )
       return;
 
+
     const newPlayers = [];
     const game = this;
-    //Get all remotePlayers from remoteData array
     const remotePlayers = [];
 
     let { pack, changes } = this.remoteData;
 
+    if (changes.length > 0) console.log('replace');
+
     changes.forEach((changed) => {
-      console.log("changed object!");
+
 
       let { shape } = changed;
       const index = game.objects.findIndex((o) => o.uuid === changed.uuid);
-      game.objects[index].geometry = new THREE.CylinderGeometry(25, 50, 50);
-      // game.player.cubeGeo
+
+      if (shape === 'cylinder'){
+
+        console.log(index)
+
+        game.objects[index].geometry = new THREE.CylinderGeometry(15, 25, 50);
+        
+      } else { 
+        console.log(index)
+        game.objects[index].geometry =  new THREE.BoxGeometry(50, 50, 50);
+      }
+
     });
 
     pack.forEach(function (data) {
@@ -318,7 +331,7 @@ class Game {
     const game = this;
     const dt = this.clock.getDelta();
 
-    this.randomDecay(0.05);
+    // this.randomDecay(0.05);
 
     if (animatedMesh) {
       animatedMesh.material.map.dispose();
@@ -392,9 +405,7 @@ class Game {
   onPointerMove(event) {
     // console.log('Running onPointerMove.')
 
-    game.pointer.set(
-      (event.clientX / window.innerWidth) * 2 - 1,
-      -(event.clientY / window.innerHeight) * 2 + 1
+    game.pointer.set((event.clientX / window.innerWidth) * 2 - 1,-(event.clientY / window.innerHeight) * 2 + 1
     );
     game.raycaster.setFromCamera(game.pointer, game.camera);
     const intersects = game.raycaster.intersectObjects(

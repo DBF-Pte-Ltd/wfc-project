@@ -136,7 +136,7 @@ function initP5Canvas(name) {
         return;
       }
 
-      grid = wfc({ grid, gridCopy, p, DIM });
+      // grid = wfc({ grid, gridCopy, p, DIM });
 
       // step 4: draw tiles
       drawTiles(p, DIM);
