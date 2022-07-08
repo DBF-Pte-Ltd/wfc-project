@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const http = require("http").Server(app);
-// var socket = require("socket.io");
 const io = require("socket.io")(http);
 
 //central state of voxel-painter
@@ -38,6 +37,7 @@ class Cell {
 }
 
 function StartOver(DIM) {
+
     let blockSize = 50;
     let blocks = {};
     let grid = [];
@@ -55,7 +55,9 @@ function StartOver(DIM) {
     }
 
     return { blockSize, DIM, grid, blocks };
+
 }
+
 
 let changes = [];
 let DIM = 40;
@@ -99,8 +101,12 @@ function newConnection(socket) {
 
     function placeBlock(block) {
         state["blocks"][block.uuid] = block; // add block to the state right?
-        checkGrid(state, block);
+
+        updateShape(state, block);
+        updateTexture(state, block)
+
         socket.broadcast.emit("add", block);
+
     }
 
     function removeBlock(block) {
@@ -109,25 +115,115 @@ function newConnection(socket) {
     }
 }
 
-function checkGrid(state, block) {
+
+
+
+function updateTexture(state, block) {
+
+
+
+    let { grid, DIM } = state;
+
+    let { i, j, k } = getCoordinates(state, block);
+    if (!checkDomain(i, j, k, DIM)) return;
+    grid[i][j][k] = block.uuid;
+
+    let neighbours = check3DNeighbours(state, i, j, k)
+
+    console.log('neighbours:::', neighbours)
+
+
+    let categories = []
+    let variations = []
+    let randomTexture = false
+    let needsTexture = [block]
+    let { category, variation } = getRandomTexture()
+
+    if (neighbours) {
+
+
+
+        neighbours.forEach(uuid => {
+
+
+            let neighbour = state["blocks"][uuid]
+
+            if (neighbour === undefined) return
+
+
+            if ((neighbour.category) && (neighbour.variation)) {
+
+                categories.push(neighbour.category)
+                variations.push(neighbour.variation)
+                needsTexture.push(neighbour)
+
+            } else {
+
+                // needsTexture.push(neighbour)
+
+            }
+
+
+        })
+
+
+
+
+
+        if (categories.length > 0) {
+
+            console.log('match!')
+            if (Math.random() > 0.1) category = categories[Math.floor(Math.random() * categories.length)];
+            if (Math.random() > 0.1) variation = variations[Math.floor(Math.random() * variations.length)];
+
+        }
+
+    }
+
+    needsTexture.forEach(o => {
+
+        o.category = category
+        o.variation = variation
+
+    })
+
+    console.log(category, variation, needsTexture.length)
+
+
+
+    changes.push(...needsTexture)
+
+}
+
+
+function getRandomTexture() {
+
+
+    let categories = ["commercial", "industrial", "institutional", "office", "parking", "recreational", "residential", ];
+    let variations = ["1-20", "1-30", "1-50", "1-60", "1-80", "1-90"];
+    let category = categories[Math.floor(Math.random() * categories.length)];
+    let variation = variations[Math.floor(Math.random() * variations.length)];
+
+    return { category, variation }
+
+}
+
+function updateShape(state, block) {
 
 
     // updates the shape of the blocks based on adjacency rules 
 
     let { grid, DIM } = state;
-
     let { i, j, k } = getCoordinates(state, block);
 
+
     if (!checkDomain(i, j, k, DIM)) return;
-
     grid[i][j][k] = block.uuid;
-
     let neighbours = check2DNeighbours(state, i, j, k)
 
     if (!neighbours) {
 
         // 2. make block into a spire,
-
         console.log('spire:', block.uuid)
         block.shape = "cylinder";
         changes.push(block);
@@ -163,6 +259,78 @@ function checkGrid(state, block) {
 
 
 
+function check3DNeighbours(state, i, j, k) {
+
+
+    let arr = []
+    let { grid, DIM } = state;
+
+    let a = i + 1;
+    let b = i - 1;
+
+    let c = k + 1;
+    let d = k - 1;
+
+    let e = j + 1
+    let f = j - 1
+
+    if (a > DIM - 1) a = DIM - 1
+    if (b < 0) b = 0
+    if (c > DIM - 1) c = DIM - 1
+    if (d < 0) d = 0
+
+    if (e < DIM - 1) {
+
+        if (grid[a][e][k]) arr.push(grid[a][e][k]);
+        if (grid[i][e][k]) arr.push(grid[a][e][k]);
+        if (grid[b][e][k]) arr.push(grid[b][e][k])
+
+        if (grid[a][e][c]) arr.push(grid[a][e][c]);
+        if (grid[i][e][c]) arr.push(grid[i][e][c]);
+        if (grid[b][e][c]) arr.push(grid[b][e][c]);
+
+        if (grid[a][e][d]) arr.push(grid[a][e][d]);
+        if (grid[i][e][d]) arr.push(grid[i][e][d]);
+        if (grid[b][e][d]) arr.push(grid[b][e][d]);
+
+    }
+
+    if (grid[a][j][k]) arr.push(grid[a][j][k]);
+    if (grid[b][j][k]) arr.push(grid[b][j][k])
+
+    if (grid[a][j][c]) arr.push(grid[a][j][c]);
+    if (grid[i][j][c]) arr.push(grid[i][j][c]);
+    if (grid[b][j][c]) arr.push(grid[b][j][c]);
+
+    if (grid[a][j][d]) arr.push(grid[a][j][d]);
+    if (grid[i][j][d]) arr.push(grid[i][j][d]);
+    if (grid[b][j][d]) arr.push(grid[b][j][d]);
+
+
+
+    if (f >= 0) {
+
+        if (grid[a][f][k]) arr.push(grid[a][f][k]);
+        if (grid[i][f][k]) arr.push(grid[a][f][k]);
+        if (grid[b][f][k]) arr.push(grid[b][f][k])
+
+        if (grid[a][f][c]) arr.push(grid[a][f][c]);
+        if (grid[i][f][c]) arr.push(grid[i][f][c]);
+        if (grid[b][f][c]) arr.push(grid[b][f][c]);
+
+        if (grid[a][f][d]) arr.push(grid[a][f][d]);
+        if (grid[i][f][d]) arr.push(grid[i][f][d]);
+        if (grid[b][f][d]) arr.push(grid[b][f][d]);
+
+    }
+
+
+    if (arr.length > 0) return arr
+
+    return false
+
+}
+
 function check2DNeighbours(state, i, j, k) {
 
 
@@ -193,9 +361,9 @@ function check2DNeighbours(state, i, j, k) {
     if (grid[i][j][d]) arr.push(grid[i][j][d]);
     if (grid[b][j][d]) arr.push(grid[b][j][d]);
 
-    if (arr.length > 0) return arr 
+    if (arr.length > 0) return arr
 
-    return false 
+    return false
 
 }
 
