@@ -2,6 +2,9 @@ const express = require("express");
 const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
+let wfcModifiers = []
+
+let runWFC = true
 
 //central state of voxel-painter
 
@@ -124,13 +127,15 @@ function StartOver(DIM) {
 let changes = [];
 let DIM = 40;
 
-let state = StartOver(DIM);
+let state = null
+
+state = StartOver(DIM);
 
 function newConnection(socket) {
-    
+
     state = StartOver(DIM);
 
-    console.log('....')
+    // console.log('....')
 
 
     let { id } = socket;
@@ -148,21 +153,12 @@ function newConnection(socket) {
     socket.on("add", placeBlock);
     socket.on("remove", removeBlock);
 
-
-
-    let {grid2D} = state 
-    state.grid2D = wfcRun(grid2D, DIM, 10) 
-
-    console.log('updateTileset!')
-    socket.emit("updateTileset", grid2D); // send state
-
-    
-
     function initPlayer(data) {
         console.log(`socket.init ${data.avatar}`);
         for (let prop in data) {
             socket["userData"][prop] = data[prop];
         }
+
     }
 
     function updatePlayer(data) {
@@ -175,23 +171,131 @@ function newConnection(socket) {
     function placeBlock(block) {
         state["blocks"][block.uuid] = block; // add block to the state right?
 
+
+        wfcModifiers.push(block) // event loop wfc 
+
+
         updateShape(state, block);
         updateTexture(state, block)
 
         socket.broadcast.emit("add", block);
 
+
+
     }
 
     function removeBlock(block) {
-        if(!block) return;
+        if (!block) return;
         let { grid, DIM } = state;
         let { i, j, k } = getCoordinates(state, state["blocks"][block.uuid]);
         if (checkDomain(i, j, k, DIM)) grid[i][j][k] = false
-       
-        
+
+
+        wfcModifiers.push(block) // event loop wfc 
+
         delete state["blocks"][block.uuid];
         socket.broadcast.emit("remove", block);
     }
+}
+
+
+
+
+
+function wfcModify(state, grid, o, tiles) {
+
+
+    console.log('modify')
+    clearSquare(state, o, 3, grid, tiles)
+    placeBlockCells(state, Object.values(state.blocks), grid)
+
+}
+
+
+
+function clearSquare(state, center, off, grid, tiles) {
+
+    console.log('clear ')
+
+    let { blockSize, DIM, blocks } = state
+    let { i, j, k } = getCoordinates(state, center)
+
+    for (var t = -off; t < off; t++) {
+
+        for (var u = -off; u < off; u++) {
+
+            let row = i + t
+            let col = k + u
+
+            if (row < 0) continue
+            if (row >= DIM) continue
+            if (col < 0) continue
+            if (col >= DIM) continue
+
+            let index = i + t + (k + u) * DIM
+
+
+            // let cell = grid[index]
+
+            if (grid[index] == undefined) {
+                console.log('undefined at', row, col)
+                grid[index] = new Cell(tiles.length)
+
+            }
+
+            grid[index] = new Cell(tiles.length)
+
+            // grid[index].options = [0, 1, 2, 3, 4, 5]
+        }
+
+    }
+
+    return grid
+}
+
+
+
+function getCoordinates(state, object) {
+
+
+    let { blockSize, DIM, blocks } = state
+    let { position } = object
+    let { x, y, z } = position
+    let i = (x + DIM * blockSize / 2) / blockSize - 0.5
+    let j = (y + DIM * blockSize / 2) / blockSize - 0.5
+    let k = (z + DIM * blockSize / 2) / blockSize - 0.5
+
+
+    return { i, j, k }
+}
+
+function updateGrid2D() {
+
+    console.log('updateGrid2D')
+
+
+    runWFC = false
+
+
+    let promise = new Promise(resolve => {
+
+        // console.log('executing promise')
+        let { grid2D } = state
+        state.grid2D = wfcRun(grid2D, DIM, 10)
+        resolve(state.grid2D)
+
+    });
+
+    promise.then(function(result) {
+
+
+        runWFC = true
+
+
+    }, error => console.log(error))
+
+
+
 }
 
 
@@ -209,7 +313,7 @@ function updateTexture(state, block) {
 
     let neighbours = check3DNeighbours(state, i, j, k)
 
-    console.log('neighbours:::', neighbours)
+    // console.log('neighbours:::', neighbours)
 
 
     let categories = []
@@ -459,7 +563,7 @@ function checkDomain(i, j, k, DIM) {
 
 function getCoordinates(state, object) {
     let { blockSize, DIM, blocks } = state;
-    console.log('getCoordinates:: ', object)
+    // console.log('getCoordinates:: ', object)
     let { position } = object;
     let { x, y, z } = position;
     let i = (x + (DIM * blockSize) / 2) / blockSize - 0.5;
@@ -486,10 +590,23 @@ setInterval(function() {
                 hands: socket.userData.hands,
             });
         }
+
+
+
+
     }
 
     // console.log('Sending remote data:: ', pack.map(p => p.position))
     if (pack.length > 0) io.emit("remoteData", { pack, changes });
+
+    if (runWFC) {
+
+        // console.log('run wfc')
+        updateGrid2D() // update grid2D 
+        io.emit("updateTileset", state.grid2D); // send state
+
+    }
+
 
     changes = [];
 }, 40);
@@ -501,7 +618,7 @@ console.log('wfc')
 
 
 
-function wfcInitialize({ blockSize, DIM, blocks}) {
+function wfcInitialize({ blockSize, DIM, /*blocks*/ }) {
 
 
 
@@ -525,11 +642,11 @@ function wfcInitialize({ blockSize, DIM, blocks}) {
     rules.forEach(arr => tiles.push(new Tile(arr)))
 
 
-    for (let i = 2; i < 11; i++) {
-        for (let j = 1; j < 4; j++) {
-            tiles.push(tiles[i].rotate(j, this));
-        }
-    }
+    // for (let i = 2; i < 11; i++) {
+    //     for (let j = 1; j < 4; j++) {
+    //         tiles.push(tiles[i].rotate(j, this));
+    //     }
+    // }
 
     // Generate the adjacency rules based on edges
     for (let i = 0; i < tiles.length; i++) {
@@ -538,7 +655,7 @@ function wfcInitialize({ blockSize, DIM, blocks}) {
     }
 
     // Start over
-    let grid = resetWfc({ blockSize, DIM, blocks,tiles });
+    let grid = resetWfc({ blockSize, DIM, /*blocks,*/ tiles });
     return { rules, tiles, grid }
 
 }
@@ -549,37 +666,69 @@ function wfcInitialize({ blockSize, DIM, blocks}) {
 
 function wfcRun({ rules, tiles, grid }, DIM, steps) {
 
+    let blockSize = 50
+
     for (var i = steps; i >= 0; i--) {
-        grid = step({grid, rules, DIM, tiles})
+
+        if (!grid) grid = wfcInitialize({ blockSize, DIM })
+        grid = step({ grid, rules, DIM, tiles })
         // console.log(i)
     }
 
-    console.log('done!', grid)
+    // console.log('done!', grid)
 
-    return {rules,tiles,grid}
+    return { rules, tiles, grid }
+}
+
+
+function placeBlockCells(state, arr, grid) {
+
+    // console.log('place block cells')
+
+    let { blockSize, DIM, blocks } = state
+
+
+    arr.forEach(o => {
+        let { i, j, k } = getCoordinates(state, o)
+
+        if (j === 0) {
+            let index = i + k * DIM
+            if (grid[index]) {
+                grid[i + k * DIM].collapsed = true;
+                grid[i + k * DIM].options = [0, 1, 4]
+
+            }
+
+        }
+
+
+
+    })
+
 }
 
 
 
 
 
-function step({grid, rules, DIM, tiles}) {
+function step({ grid, rules, DIM, tiles }) {
+
+
+    // let DIM = 20
+
+    // step 1: check end condition
+    // if (wfcDone) return;
+
+    // step 2: check modifiers
+    wfcModifiers.forEach((o) => wfcModify(state, grid, o, tiles));
+    wfcModifiers = [];
+
+    // step 3: run wfc
 
 
 
-    /*
-      // let DIM = 20
-
-      // step 1: check end condition
-      if (wfcDone) return;
-
-      // step 2: check modifiers
-      wfcModifiers.forEach((o) => wfcModify(game.state, grid, o));
-      wfcModifiers = [];
-
-      // step 3: run wfc
-
-      */
+    if (grid === undefined) return false
+    if (!Array.isArray(grid)) return false
 
     let gridCopy = grid.slice(); // Make a copy of grid
     gridCopy = gridCopy.filter((a) => !a.collapsed); // Remove any collapsed cells
@@ -600,7 +749,7 @@ function step({grid, rules, DIM, tiles}) {
 }
 
 
-function resetWfc({ blockSize, DIM, blocks,tiles }) {
+function resetWfc({ blockSize, DIM, blocks, tiles }) {
 
 
 
@@ -611,7 +760,11 @@ function resetWfc({ blockSize, DIM, blocks,tiles }) {
 
     }
 
-    // placeBlockCells(game.state, Object.values(blocks));
+    if (state) {
+
+        placeBlockCells(state, Object.values(state.blocks), grid);
+
+    }
 
     return grid
 }
