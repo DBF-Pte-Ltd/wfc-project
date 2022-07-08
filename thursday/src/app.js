@@ -15,7 +15,8 @@ app.get('/', function(req, res) {
 
 io.sockets.on('connection', newConnection);
 
-http.listen(3000, function() {
+
+http.listen(process.env.PORT || 3000, function() {
     console.log('listening on *:3000');
 });
 
@@ -132,6 +133,9 @@ function checkGrid(state, block) {
 
 
 	let { i, j, k } = getCoordinates(state,block)
+
+	if(!checkDomain(i,j,k, DIM)) return
+
 	grid[i][j][k] = block.uuid 
 
 
@@ -176,6 +180,13 @@ function check2DNeighbours(state, i,j,k){
 	if (grid[i][c][d]) return true
 	if (grid[b][c][d]) return true
 	
+}
+
+function checkDomain(i, j, k, DIM) {
+	if(i<0 || i >DIM-1) return false;
+	if(j<0 || j >DIM-1) return false;
+	if(k<0 || k >DIM-1) return false;
+	return true
 }
 
 

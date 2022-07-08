@@ -1,4 +1,4 @@
-let enableHandTracking = false 
+let enableHandTracking = true 
 
 class Game {
     constructor() {
@@ -59,7 +59,7 @@ class Game {
         this.pointer = new THREE.Vector2();
 
         //shift press handler
-        this.isShiftDown = false;
+        this.isCrtlDown = false;
 
         const geometry = new THREE.PlaneGeometry(DIM * 50, DIM * 50);
         geometry.rotateX(-Math.PI / 2);
@@ -418,7 +418,7 @@ class Game {
         if (intersects.length > 0) {
             const intersect = intersects[0];
             // delete cube
-            if (game.isShiftDown) {
+            if (game.isCrtlDown) {
 
                 if (intersect.object !== game.plane) {
                     game.scene.remove(intersect.object);
@@ -436,7 +436,6 @@ class Game {
                 let position = new THREE.Vector3()
                 position.copy(intersect.point).add(intersect.face.normal);
                 position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-
 
                 let uuid = generateUUID()
                 let color = game.player.color
@@ -458,16 +457,16 @@ class Game {
 
     onDocumentKeyDown(event) {
         switch (event.keyCode) {
-            case 16:
-                game.isShiftDown = true;
+            case 17:
+                game.isCrtlDown = true;
                 break;
         }
     }
 
     onDocumentKeyUp(event) {
         switch (event.keyCode) {
-            case 16:
-                game.isShiftDown = false;
+            case 17:
+                game.isCrtlDown = false;
                 break;
         }
     }
@@ -497,7 +496,7 @@ class Game {
         if (intersects.length > 0) {
             const intersect = intersects[0];
             // delete cube
-            if (this.isShiftDown) {
+            if (this.isCrtlDown) {
                 if (intersect.object !== this.plane) {
                     this.scene.remove(intersect.object);
                     this.objects.splice(this.objects.indexOf(intersect.object), 1);
@@ -508,6 +507,15 @@ class Game {
                 let position = new THREE.Vector3();
                 position.copy(intersect.point).add(intersect.face.normal);
                 position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+
+                for(const object of game.objects) {
+                  // console.log('Positions:: ', position, object.position)
+                  if(position.equals(object.position)) {
+                    console.log('Already exists!')
+                    return;
+                  }
+                }
+
                 let uuid = generateUUID();
                 let color = this.player.color;
 

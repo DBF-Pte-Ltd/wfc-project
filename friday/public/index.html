@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>WFC Painter</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            body{ margin: 0; }
+        </style>
+		<link rel="stylesheet" href="./styles.css">
+	</head>
+
+	<body>
+		<script src="./libs/three.min.js"></script>
+		<script src="./libs/inflate.min.js"></script>
+		<script src="./libs/FBXLoader.js"></script>
+		<script src="./libs/OrbitControls.js"></script>
+		<script src="./libs/Detector.js"></script>
+		<script src="./libs/toon3d.js"></script>
+		<script src="./libs/utils.js"></script>
+
+		<!-- Be sure to use tfjs 1.7.4, in tfjs 2 they broke their own handpose model-->
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@1.7.4/dist/tf-core.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@1.7.4/dist/tf-converter.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose@0.0.4/dist/handpose.min.js"></script>
+		
+
+
+		 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/addons/p5.dom.min.js"></script>
+
+        <script src="./libs/procedural-texture/cell.js"></script>
+		<script src="./libs/procedural-texture/tile.js"></script>
+
+        <script src="./libs/procedural-texture/p5texture.js"></script>
+		
+		<script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
+		
+        <div id="p5js" hidden></div>
+
+		<script src="./player.js"></script>
+		<script src="./game.js"></script>
+		<script src="./hands-control.js"></script>
+		<script>
+			document.addEventListener("DOMContentLoaded", function(){
+				const game = new Game();
+				window.game = game;//For debugging only
+			});
+		</script>
+	</body>
+</html>
+
+
