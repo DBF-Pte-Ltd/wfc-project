@@ -1,4 +1,4 @@
-let enableHandTracking = false;
+let enableHandTracking = true;
 let runWFC = false;
 
 const voxelMat = new THREE.MeshBasicMaterial({
@@ -179,7 +179,7 @@ class Game {
     );
 
     this.textures = this.intializeTextures();
-    this.camera.position.set(500, 400, -500);
+    this.camera.position.set(0, 3000, -4000);
     this.scene = new THREE.Scene();
 
     let ambient = new THREE.AmbientLight(0xa0a0a0);
@@ -209,8 +209,8 @@ class Game {
     this.controls.update();
     this.controls.minPolarAngle = Math.PI / 6;
     this.controls.maxPolarAngle = Math.PI / 2;
-    this.controls.minAzimuthAngle = 0;
-    this.controls.maxAzimuthAngle = Math.PI;
+    this.controls.minAzimuthAngle = -Math.PI / 2;
+    this.controls.maxAzimuthAngle = Math.PI / 2;
 
     window.addEventListener(
       "resize",
@@ -364,7 +364,9 @@ class Game {
             let avgHandPos = AVERAGE(game.handElevations);
             if (avgHandPos > 1500) avgHandPos = 1500;
 
-            game.player.hands[0].landmarks.forEach((l) => (l[2] += avgHandPos));
+            game.player.hands[0].landmarks.forEach((l) => {
+              l[2] += avgHandPos
+            });
           }
           game.player.updateSocket();
         });
@@ -540,6 +542,13 @@ class Game {
     let position = new THREE.Vector3();
     position.copy(intersect.point).add(intersect.face.normal);
     position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+
+    for(const object of game.objects) {
+      if(position.equals(object.position)) {
+        console.log('Already exists!')
+        return;
+      }
+    }
 
     let uuid = generateUUID();
     let color = game.player.color;

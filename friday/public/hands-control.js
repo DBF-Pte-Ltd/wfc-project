@@ -139,6 +139,7 @@ function updateMeshesFromServerData(remoteData, game) {
   for (var id in handMeshes) {
     handCollection.rotation.x = 0;
     handCollection.rotation.z = 0;
+    handCollection.position.set(0,0,0)
     // handCollection.rotation.z = 0
     const data = remoteData.find((d) => d.id === id);
     if (!data || !data.hands.length) {
@@ -179,7 +180,9 @@ function updateMeshesFromServerData(remoteData, game) {
     averageHandPosition.multiplyScalar(1 / 21);
     averageHandPosition.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
     averageHandPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
-    // console.log('averageHandPosition is:: ', id, averageHandPosition)
+    handCollection.position.set(averageHandPosition.x*1.25, 0, averageHandPosition.z*1.25)
+    averageHandPosition.x *=2.25
+    averageHandPosition.z *=2.25
     game.handMovementCallback(averageHandPosition);
   }
 }
