@@ -1,5 +1,5 @@
 let enableHandTracking = false;
-let runWFC = false;
+let runWFC = true;
 
 const voxelMat = new THREE.MeshBasicMaterial({
   visible: false,
@@ -318,7 +318,7 @@ class Game {
     const game = this;
     const dt = this.clock.getDelta();
 
-    this.randomDecay(0.05);
+    // this.randomDecay(0.05);
 
     if (animatedMesh) {
       animatedMesh.material.map.dispose();
