@@ -318,6 +318,8 @@ class Game {
     const game = this;
     const dt = this.clock.getDelta();
 
+    this.randomDestroy(0.05);
+
     if (animatedMesh) {
       animatedMesh.material.map.dispose();
       animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
@@ -490,6 +492,25 @@ class Game {
         // console.log("add voxel");
         game.createBlock(intersect);
       }
+    }
+  }
+
+  randomDestroy(probability) {
+    if (Math.random() > probability) return;
+    const game = this;
+    const voxel = selectRandom(Object.values(game.voxels));
+    if (!voxel) return;
+    game.scene.remove(voxel);
+    delete game.voxels[voxel.uuid];
+    const blockIndex = game.objects.findIndex((o) => o.uuid === voxel.uuid);
+
+    if (blockIndex > -1) {
+      const block = game.objects[blockIndex];
+      game.scene.remove(block);
+      game.objects.splice(blockIndex, 1);
+      game.player.socket.emit("remove", {
+        uuid: block.uuid,
+      });
     }
   }
 

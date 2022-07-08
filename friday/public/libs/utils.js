@@ -115,6 +115,15 @@ function SUM(list) {
 }
 
 function AVERAGE(list) {
-  const total = SUM(list)
-  return total/list.length
+  const total = SUM(list);
+  return total / list.length;
+}
+
+function randomIndex(length) {
+  return Math.round(Math.random() * (length - 1));
+}
+
+function selectRandom(collection) {
+  const index = randomIndex(collection.length);
+  return collection[index];
 }
