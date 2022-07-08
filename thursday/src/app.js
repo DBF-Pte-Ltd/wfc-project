@@ -160,9 +160,9 @@ function check2DNeighbours(state, i,j,k){
 	let d = j - 1 
 
 
-	if (a > DIM) return true 
+	if (a > DIM-1) return true 
 	if (b < 0) return true 
-	if (c > DIM) return true 
+	if (c > DIM-1) return true 
 	if (d < 0) return true 
 
 	if (grid[a][j][k]) return true
