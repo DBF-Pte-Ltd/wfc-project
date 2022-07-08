@@ -11,38 +11,48 @@ let grid = [];
 let animatedMesh = null;
 let run = true;
 let wfcDone = false;
-
 let DIM = 40;
 let SIZE = 50;
 
 let wfcModifiers = [];
 
+
+let tileData = []
+
 function initP5js(scene) {
+
   console.log("initP5js");
 
   const geometry = new THREE.PlaneGeometry(DIM * SIZE, DIM * SIZE);
   geometry.rotateX(-Math.PI / 2);
+  animatedMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 'red'})); 
+  // scene.add(animatedMesh)
 
   let name = "p5jsCanvas";
 
   let promise = new Promise((resolve) => {
     myP5 = initP5Canvas(name);
-    setTimeout(() => resolve(myP5), 10);
+    setTimeout(() => resolve(myP5), 1);
   });
 
   promise.then(
     function (result) {
+
+      console.log('p5 loaded!')
+
+      myP5 = result
+
+      displayP5(tileData)
       // let p5 = result
-      let myP5 = result;
+ /*     myP5 = result;
       let texture = new THREE.CanvasTexture(myP5.oCanvas);
       animatedMesh = new THREE.Mesh(
         geometry,
         new THREE.MeshBasicMaterial({ map: texture })
       );
       animatedMesh.material.needsUpdate = true;
-
       scene.add(animatedMesh);
-    },
+ */   },
 
     (error) => alert(error)
   );
@@ -59,6 +69,15 @@ function updateTexture(canvas, mesh) {
   mesh.material = material;
 
   return mesh;
+}
+
+
+function displayP5(data){
+
+
+  myP5.display(data)
+
+
 }
 
 function initP5Canvas(name) {
@@ -109,13 +128,21 @@ function initP5Canvas(name) {
         tile.analyze(tiles);
       }
 
-      // Start over
-      startOver();
-
-      p.run = true;
+ 
     };
 
-    p.draw = function () {
+    p.display = function(data){
+
+      p.background(34,155,215)
+
+
+
+
+
+    }
+
+/*  
+  p.draw = function () {
       // let DIM = 20
 
       // step 1: check end condition
@@ -141,11 +168,12 @@ function initP5Canvas(name) {
       // step 4: draw tiles
       drawTiles(p, DIM);
     };
+    */
   };
 
   return new p5(sketch, "p5js");
 }
-
+/*
 function wfcModify(state, grid, o) {
   console.log("modify");
   clearSquare(state, o, 3, grid);
@@ -366,3 +394,4 @@ function wfc({ grid, gridCopy, p, DIM }) {
 
   return grid;
 }
+*/
