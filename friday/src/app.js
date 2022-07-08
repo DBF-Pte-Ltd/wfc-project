@@ -110,14 +110,14 @@ function newConnection(socket) {
     }
 
     function removeBlock(block) {
-        delete state["blocks"][block.uuid];
-
-        socket.broadcast.emit("remove", block);
-
+        if(!block) return;
         let { grid, DIM } = state;
-        let { i, j, k } = getCoordinates(state, block);
-        if (!checkDomain(i, j, k, DIM)) return;
-        grid[i][j][k] = false
+        let { i, j, k } = getCoordinates(state, state["blocks"][block.uuid]);
+        if (checkDomain(i, j, k, DIM)) grid[i][j][k] = false
+       
+        
+        delete state["blocks"][block.uuid];
+        socket.broadcast.emit("remove", block);
     }
 }
 
@@ -386,6 +386,7 @@ function checkDomain(i, j, k, DIM) {
 
 function getCoordinates(state, object) {
     let { blockSize, DIM, blocks } = state;
+    console.log('getCoordinates:: ', object)
     let { position } = object;
     let { x, y, z } = position;
     let i = (x + (DIM * blockSize) / 2) / blockSize - 0.5;
