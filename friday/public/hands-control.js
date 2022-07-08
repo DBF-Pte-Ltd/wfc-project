@@ -22,17 +22,22 @@ let handMeshes = {}; // these are threejs objects that makes up the rendering of
 
 let handCollection = new THREE.Object3D();
 
+let handsImage = new Image();
+handsImage.src = "assets/images/hands.png";
+
 // html canvas for drawing debug view
-var dbg = document.createElement("canvas").getContext("2d");
+let dbg = document.createElement("canvas").getContext("2d");
 dbg.canvas.style.position = "absolute";
 dbg.canvas.style.left = "0px";
 dbg.canvas.style.top = "0px";
 dbg.canvas.style.zIndex = 100; // "bring to front"
-dbg.canvas.id = 'dbg-canvas'
+dbg.canvas.id = "dbg-canvas";
+
+dbg.drawImage(handsImage, 100, 100);
+
 document.body.appendChild(dbg.canvas);
 
-if(enableHandTracking) {
-
+if (enableHandTracking) {
 }
 
 const videoConstraints = {
@@ -42,8 +47,7 @@ const videoConstraints = {
 
 // read video from webcam
 
-if(enableHandTracking) {
-  
+if (enableHandTracking) {
   var capture = document.createElement("video");
   capture.playsinline = "playsinline";
   capture.autoplay = "autoplay";
@@ -53,12 +57,12 @@ if(enableHandTracking) {
       window.stream = stream;
       capture.srcObject = stream;
     });
-  
+
   // hide the video element
   capture.style.position = "absolute";
   capture.style.opacity = 0;
   capture.style.zIndex = -100; // "send to back"
-  
+
   // signal when capture is ready and set size for debug canvas
   capture.onloadeddata = function () {
     console.log("video initialized");
@@ -66,7 +70,7 @@ if(enableHandTracking) {
     dbg.canvas.width = capture.videoWidth; // half size
     dbg.canvas.height = capture.videoHeight;
     dbg.canvas.style.transform = "scale(-1, 1)";
-  
+
     game.camera.position.z = capture.videoWidth / 2; // rough estimate for suitable camera distance based on FOV
   };
 }

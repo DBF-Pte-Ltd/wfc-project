@@ -341,6 +341,9 @@ class Game {
           if (!myHands.length) {
             // haven't found any hands
             statusText = "Show some hands!";
+            dbg.clearRect(0, 0, dbg.canvas.width, dbg.canvas.height);
+            dbg.drawImage(handsImage, 100, 100);
+            // console.log("Show some hands!");
           } else {
             // display the confidence, to 3 decimal places
             statusText =
