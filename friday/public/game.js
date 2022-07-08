@@ -318,7 +318,7 @@ class Game {
     const game = this;
     const dt = this.clock.getDelta();
 
-    this.randomDestroy(0.05);
+    this.randomDecay(0.05);
 
     if (animatedMesh) {
       animatedMesh.material.map.dispose();
@@ -495,7 +495,7 @@ class Game {
     }
   }
 
-  randomDestroy(probability) {
+  randomDecay(probability) {
     if (Math.random() > probability) return;
     const game = this;
     const voxel = selectRandom(Object.values(game.voxels));
