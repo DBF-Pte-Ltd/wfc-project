@@ -1,3 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600&display=swap');
+
+
+body {
+    overflow: hidden;
+}
+
 #dbg-canvas {
     border: 2px solid white;
+    display: none;
 }
+
+#show-hands-label {
+    position: absolute;
+    bottom: 4vh;
+    text-align: center;
+    width: 100vw;
+    font-size: 4vh;
+    font-family: 'Nunito', sans-serif;
+    color: white;
+    display: none;
+}
+
+#show-crtl-label {
+    position: absolute;
+    bottom: 4vh;
+    text-align: center;
+    width: 100vw;
+    font-size: 4vh;
+    font-family: 'Nunito', sans-serif;
+    color: white;
+    display: none;
+}
+
+#button-invite {
+    position: absolute;
+    bottom: 4vh;
+    right: 4vh;
+
+    text-align: center;
+    width: 16vh;
+    height: 4vh;
+    border-radius: 2vh;
+    font-size: 2vh;
+    line-height: 4vh;
+    font-family: 'Nunito', sans-serif;
+    color: white;
+
+    cursor: pointer;
+
+    border: 2px solid #34c6f5;
+}
+
+#button-invite:hover {
+    transform: translate(0, -2px);
+    background: #34c6f5;
+    border: 2px solid #34c5f500;
+}
+
+#button-invite:active {
+    transform: translate(0, 2px);
+}
+
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+  }
