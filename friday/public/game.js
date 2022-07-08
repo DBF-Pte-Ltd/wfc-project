@@ -235,10 +235,12 @@ class Game {
         );
         this.controls.target.set(0, 150, 0);
         this.controls.update();
-        this.controls.minPolarAngle = Math.PI / 6;
+        this.controls.enabled = false;
+        this.controls.autoRotate = true;
+        /* this.controls.minPolarAngle = Math.PI / 6;
         this.controls.maxPolarAngle = Math.PI / 2;
         this.controls.minAzimuthAngle = -Math.PI / 2;
-        this.controls.maxAzimuthAngle = Math.PI / 2;
+        this.controls.maxAzimuthAngle = Math.PI / 2; */
 
         window.addEventListener(
             "resize",
@@ -371,6 +373,7 @@ class Game {
         const dt = this.clock.getDelta();
 
         stats.update()
+        game.controls.update()
 
         // this.randomDecay(0.05);
 
@@ -395,13 +398,22 @@ class Game {
                     // best to avoid drawing something here! it might produce weird results due to racing
                     myHands = _hands; // update the global myHands object with the detected hands
                     if (!myHands.length) {
+                        $('#show-hands-label').show()
+                        $('#show-crtl-label').hide()
                         // haven't found any hands
                         statusText = "Show some hands!";
                         dbg.clearRect(0, 0, dbg.canvas.width, dbg.canvas.height);
-                        dbg.drawImage(handsImage, 100, 100);
+                        // dbg.drawImage(handsImage, 100, 100);
                         // console.log("Show some hands!");
+                        game.noHandsTimeOut = setTimeout(() => {
+                            game.controls.autoRotate = true;
+                        },1000)
                     } else {
+                        clearTimeout(game.noHandsTimeOut)
+                        game.controls.autoRotate = false;
                         // display the confidence, to 3 decimal places
+                        $('#show-hands-label').hide()
+                        $('#show-crtl-label').show()
                         statusText =
                             "Confidence: " +
                             Math.round(myHands[0].handInViewConfidence * 1000) / 1000;
@@ -498,12 +510,18 @@ class Game {
             case 17:
                 game.isCrtlDown = true;
                 break;
+            default:
+                game.isCrtlDown = true;
+                break;
         }
     }
 
     onDocumentKeyUp(event) {
         switch (event.keyCode) {
             case 17:
+                game.isCrtlDown = false;
+                break;
+            default:
                 game.isCrtlDown = false;
                 break;
         }

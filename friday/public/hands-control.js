@@ -35,7 +35,7 @@ dbg.canvas.style.top = "0px";
 dbg.canvas.style.zIndex = 100; // "bring to front"
 dbg.canvas.id = "dbg-canvas";
 
-dbg.drawImage(handsImage, 100, 100);
+// dbg.drawImage(handsImage, 100, 100);
 
 document.body.appendChild(dbg.canvas);
 
@@ -190,8 +190,11 @@ function updateMeshesFromServerData(remoteData, game) {
       game.handMovementCallback(averageHandPosition);
 
       // game.camera.position.copy(averageHandPosition).add(cameraOffset)
-      game.camera.position.lerp(averageHandPosition.clone().add(cameraOffset),0.01)
-      game.camera.lookAt(averageHandPosition)
+      game.camera.position.lerp(averageHandPosition.clone().add(cameraOffset), 0.01)
+
+      const lookAt = new THREE.Vector3( 0, 0, -1 );
+      lookAt.applyQuaternion( game.camera.quaternion )
+      game.camera.lookAt(lookAt.lerp(averageHandPosition, 0.01))
     }
   }
 }
