@@ -189,7 +189,8 @@ function updateMeshesFromServerData(remoteData, game) {
       averageHandPosition.z *=2.25
       game.handMovementCallback(averageHandPosition);
 
-      game.camera.position.copy(averageHandPosition).add(cameraOffset)
+      // game.camera.position.copy(averageHandPosition).add(cameraOffset)
+      game.camera.position.lerp(averageHandPosition.clone().add(cameraOffset),0.01)
       game.camera.lookAt(averageHandPosition)
     }
   }
