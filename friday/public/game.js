@@ -1,4 +1,4 @@
-let enableHandTracking = false;
+let enableHandTracking = true;
 let runWFC = false;
 
 var stats = Stats()
