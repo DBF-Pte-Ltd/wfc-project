@@ -45,6 +45,8 @@ class Game {
 
         this.init();
 
+        initP5js(this.scene);
+
         window.onError = function(error) {
             console.error(JSON.stringify(error));
         };
@@ -82,7 +84,7 @@ class Game {
         Object.values(blocks).forEach((o) => this.update("add", o));
         
 
-        initP5js(this.scene);
+    
     
 
     }
@@ -162,41 +164,20 @@ class Game {
     updateMap(a, b, o) {
 
         if(!o) return;
-
- /*       object.category = category
-        object.variation = variation
-
-        console.log(category, variation)
-        console.log('texture:',this.textures[category][variation] )
-        object.material.map = this.textures[category][variation];*/
-
-
-        // let category = ['commercial', 'industrial', 'institutional', 'office', 'parking', 'recreational', 'residential']
-        // let values = ['1-20', '1-30', '1-50', '1-60', '1-80', '1-90']
-        // let str1 = category[Math.floor(Math.random() * category.length)]
-        // let str2 = values[Math.floor(Math.random() * values.length)]
         o.material.map = this.textures[a][b]
         o.material.needsUpdate = true 
 
-        // console.log('update textures')
-
-        // this.updateTextures()
-        
     }
 
     updateTileset(data){
 
       console.log('game - update tileset')
+      drawTexture(data)
 
 
-      // // initP5js(this.scene);
-
-      // displayP5(data)
-
-      // console.log(animatedMesh)
-      // // animatedMesh.material.map.dispose();
-      // animatedMesh.material.map = new THREE.CanvasTexture(myP5.oCanvas);
-      // animatedMesh.material.needsUpdate = true;
+      if (animatedMesh.material.map) animatedMesh.material.map.dispose();
+      animatedMesh.material.map = new THREE.CanvasTexture(wtfCanvas);
+      animatedMesh.material.needsUpdate = true;
  
     }
 
